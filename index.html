@@ -913,9 +913,8 @@ const PRICES = {
      stay; Wedding pack p.10 waives the event fee at "7+ days". */
   weekFromNights: 7,
 
-  /* Statement p.1: "Weekly Discounted Rate of 14% Off Entire Stay (for
-     direct bookings only)" — USD -4,745.02 against a USD 33,893.00
-     accommodation rate (33,893 x 0.14 = 4,745.02 exactly).
+  /* Source: Statement p.1, "Weekly Discounted Rate of 14% Off Entire Stay
+     (for direct bookings only)".
      Applied AFTER the nightly rate x nights and the over-20 surcharge,
      and BEFORE both GCT and gratuity — see the gratuity note below. */
   directBookingDiscount: { rate: 0.14, fromNights: 7 },
@@ -1055,9 +1054,8 @@ const PRICES = {
      removed. The bar is disclosed as a line with no amount instead. */
 
   /* Visitor and event-day catering, used for the HIGH end of the range.
-     Statement p.4, wedding day: "48x (April 14th - 2nd Event Day - Wedding
-     Day) All-Inclusive Plan for 48 Adults @ $249" — this is what Silent
-     Waters actually billed event attendees on a wedding day.
+     Source: Statement p.4 — the per-person all-inclusive rate charged to
+     event attendees on a wedding day.
      Information Pack p.20 gives the standing visitor day rates by age for
      comparison (All-Inclusive 217 adult / 169 teen / 99 child; Gourmet is
      per meal, 30 breakfast / 44 lunch / 79 dinner, each +10% GCT). */
@@ -1079,12 +1077,12 @@ const PRICES = {
       { role: "Bathroom attendant", qty: 1, rate: 95 }
     ],
     /* No headcount scaling rule exists in any document. Statement p.2 and
-       p.4 show staffing quoted per service plan, not per guest count: the
-       same booking is billed $930 (arrival dinner), $1,155 (wedding
-       ceremony & reception), $515 (bridal breakfast & brunch) and $230
-       (7 visitors). The $930 roster above is therefore REPRESENTATIVE of a
-       reception, not a formula. The old ">54 guests adds 2 servers and a
-       bartender" rule was invented and has been removed. */
+       p.4 show staffing quoted per service plan rather than per guest
+       count — four different rosters are billed across a single booking,
+       varying by the service, not the headcount. The roster above is
+       therefore REPRESENTATIVE of a reception, not a formula. The old
+       ">54 guests adds 2 servers and a bartender" rule was invented and has
+       been removed. See docs/PRICING_AUDIT.md for the worked comparison. */
     quotedPerServicePlan: true
   },
 
@@ -1150,10 +1148,9 @@ const PRICES = {
      required for any event regardless of the time of year."
 
      BASE: the documents contradict each other. Information Pack p.5 #5 and
-     p.13 say "pre-tax/PRE-discount"; Statement p.1 says "1x 20% Staff
-     Gratuity based pre-tax/POST-discounted accommodation rate of
-     $27,963.70" — and 27,963.70 x 0.20 = 5,592.74, the amount actually
-     charged. We follow the statement, because it is what London billed.
+     p.13 say "pre-tax/PRE-discount"; Statement p.1 says
+     "pre-tax/POST-discounted", and bills on that basis. We follow the
+     statement, because it is what London actually charged.
      Flagged in docs/QUESTIONS_FOR_LONDON.md item 5. */
   gratuity: 0.20,
   gratuityOnCard: 0.23,
@@ -1305,7 +1302,7 @@ function calcQuote(input) {
      and then takes 14% off for direct bookings of a week or more. The
      discount lands on the accommodation subtotal including the over-20
      surcharge, and both GCT and gratuity are computed on the discounted
-     figure (27,963.70 on that invoice). */
+     figure. */
   const preDiscount = r2(accommodationBase + overflowCost);
   const discountApplies = nights >= PRICES.directBookingDiscount.fromNights;
   const discount = discountApplies
@@ -1336,11 +1333,10 @@ function calcQuote(input) {
 
   /* ---- event food, two sourced ends --------------------------------
      LOW  — catering from the wedding menus (Menu Options pack p.1-3).
-     HIGH — every event guest on the all-inclusive event-day plan at USD 249
-            per person, the rate Silent Waters actually billed on a wedding
-            day (Statement p.4: "48x ... All-Inclusive Plan for 48 Adults @
-            $249"). This replaces the invented 15% uplift that used to
-            generate the high end. */
+     HIGH — every event guest on the all-inclusive event-day plan, at the
+            per-person rate Silent Waters bills on a wedding day
+            (Statement p.4). This replaces the invented 15% uplift that used
+            to generate the high end. */
   const eventFoodLow = isCocktail
     ? r2(selections * selMin * eventDays)
     : r2(menuPrice * eventGuests * eventDays);
