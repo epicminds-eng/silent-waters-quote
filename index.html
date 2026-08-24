@@ -274,26 +274,15 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   cursor: pointer;
 }
 .cal__nav:disabled{ opacity: .3; cursor: not-allowed; }
-.cal__prompt{
+
+.cal__title{
   flex: 1 1 auto;
   text-align: center;
-  font-size: var(--fs-2xs);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  min-width: 0;
-}
-.cal__prompt strong{ color: var(--gold); font-weight: 600; }
-
-.cal__months{ display: flex; gap: var(--s-md); }
-.cal__month{ flex: 1 1 100%; min-width: 0; }
-.cal__month--second{ display: none; }
-.cal__title{
-  text-align: center;
   font-family: var(--font-display);
-  font-size: var(--fs-md);
+  font-size: var(--fs-lg);
   font-weight: 600;
-  margin: 0 0 var(--s-2xs);
+  margin: 0;
+  min-width: 0;
 }
 .cal__grid{ display: grid; grid-template-columns: repeat(7, 1fr); }
 .cal__dow{
@@ -318,13 +307,29 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   color: var(--ink);
   cursor: pointer;
 }
+/* Past days, and days that would break the season minimum: inert. */
 .cal__day:disabled{ color: var(--line); cursor: not-allowed; }
-.cal__day[data-today="1"]{ box-shadow: inset 0 0 0 1px var(--line); }
+
+/* Today: an outlined circle, never filled — it is a landmark, not a choice. */
+.cal__day[data-today="1"]{
+  box-shadow: inset 0 0 0 1px var(--ink-mute);
+  border-radius: var(--radius-pill);
+}
+
+/* The nights between the two ends: a light wash behind the cell. */
 .cal__cell[data-in-range="1"]{ background: var(--gold-wash); }
 .cal__cell[data-edge="start"]{ background: var(--gold-wash); border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
 .cal__cell[data-edge="end"]{ background: var(--gold-wash); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
 .cal__cell[data-edge="only"]{ background: transparent; }
-.cal__day[data-edge]{ background: var(--gold); color: #fff; font-weight: 600; }
+
+/* The two ends themselves: solid gold, and gold beats the today outline. */
+.cal__day[data-edge]{
+  background: var(--gold);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
 .cal__day[data-seventh="1"]::after{
   content: "";
   position: absolute;
@@ -368,8 +373,12 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   padding: var(--s-2xs) 0;
 }
 
+/* One month at every width. Only the sizing changes. */
 @media (min-width: 40rem){
-  .cal__month--second{ display: block; }
+  .cal{ padding: var(--s-md); }
+  .cal__day{ font-size: var(--fs-md); }
+  .cal__dow{ font-size: var(--fs-xs); }
+  .cal__title{ font-size: var(--fs-xl); }
 }
 
 /* ---------------- callouts ---------------- */
@@ -1380,9 +1389,6 @@ const COPY = {
 
   /* The pop-up calendar on the dates screen. */
   calendar: {
-    promptPickCheckIn: "Select your check-in date",
-    promptPickCheckOut: "Select your check-out date",
-    promptNights: "<strong>{nights}</strong> — tap to confirm",
     summaryAwaiting: "{start} – select your check-out date",
     summaryComplete: "{start} – {end} · {nights}",
     feeWaivedLegend: "Event fee waived from here",
@@ -2000,6 +2006,18 @@ function minNightsForDate(iso) {
 }
 
 /**
+ * Which of the picker's THREE states a selection is in. There is no
+ * fourth: no preview, no "tap to confirm". A forward second tap goes
+ * straight from awaiting-checkout to complete.
+ */
+function pickerPhase(sel) {
+  const inIso = (sel && sel.checkIn) || "";
+  const outIso = (sel && sel.checkOut) || "";
+  if (!inIso) return "empty";
+  return outIso ? "complete" : "awaiting-checkout";
+}
+
+/**
  * The whole picker interaction, as one pure step.
  * @param {{checkIn:string, checkOut:string}} sel current selection
  * @param {string} dateIso the day that was tapped
@@ -2157,7 +2175,10 @@ const COUNT_FIELDS = [
 ];
 
 /* Ephemeral picker chrome — deliberately not persisted. */
-const ui = { calOpen: false, month: "", hover: "" };
+/* No `hover` here on purpose. A preview state is what broke the picker on
+   phones: touch fires mouseover before click, the re-render replaced the
+   node under the finger, and the tap never landed on a day. */
+const ui = { calOpen: false, month: "" };
 
 let state = loadState();
 
@@ -2420,74 +2441,44 @@ function renderCalendar() {
 
   const today = todayIso();
   const sel = { checkIn: state.checkIn, checkOut: state.checkOut };
-  const awaitingOut = Boolean(sel.checkIn) && !sel.checkOut;
-
-  /* While picking a check-out, a hovered day previews the range. */
-  const preview = awaitingOut && ui.hover && ui.hover > sel.checkIn &&
-    !pickerDayFlags(ui.hover, sel, today).disabled
-      ? { checkIn: sel.checkIn, checkOut: ui.hover }
-      : null;
-  const shown = preview || sel;
+  const awaitingOut = pickerPhase(sel) === "awaiting-checkout";
 
   const anchor = ui.month.split("-").map(Number);
-  const baseY = anchor[0], baseM = anchor[1] - 1;
+  const y = anchor[0], mi = anchor[1] - 1;
+  const atStart = ui.month <= (today.slice(0, 7) + "-01");
 
-  let prompt;
-  if (!sel.checkIn) {
-    prompt = esc(COPY.calendar.promptPickCheckIn);
-  } else if (awaitingOut) {
-    const n = preview ? nightsBetween(sel.checkIn, preview.checkOut) : 0;
-    prompt = n > 0
-      ? t(COPY.calendar.promptNights,
-          { nights: plural(n, COPY.common.night, COPY.common.nights) })
-      : esc(COPY.calendar.promptPickCheckOut);
-  } else {
-    prompt = esc(pickerSummary(sel));
-  }
-
-  const firstOfThisMonth = todayIso().slice(0, 7) + "-01";
-  const atStart = ui.month <= firstOfThisMonth;
-
+  /* Header is the month and the two arrows. Nothing else — no night
+     count, no instruction, no confirmation step. Where the guest is up to
+     is said once, in the field above. */
   let html =
     '<div class="cal__head">' +
-      '<button type="button" class="cal__nav" data-cal-nav="-1" aria-label="' + esc(COPY.calendar.prevMonth) + '"' +
-        (atStart ? " disabled" : "") + '>‹</button>' +
-      '<span class="cal__prompt">' + prompt + '</span>' +
-      '<button type="button" class="cal__nav" data-cal-nav="1" aria-label="' + esc(COPY.calendar.nextMonth) + '">›</button>' +
-    '</div><div class="cal__months">';
+      '<button type="button" class="cal__nav" data-cal-nav="-1" aria-label="' +
+        esc(COPY.calendar.prevMonth) + '"' + (atStart ? " disabled" : "") + '>‹</button>' +
+      '<span class="cal__title">' + esc(monthLabel(y, mi)) + '</span>' +
+      '<button type="button" class="cal__nav" data-cal-nav="1" aria-label="' +
+        esc(COPY.calendar.nextMonth) + '">›</button>' +
+    '</div><div class="cal__grid">' +
+    DOW.map(x => '<span class="cal__dow">' + x + '</span>').join("");
 
-  for (let m = 0; m < 2; m++) {
-    const d = new Date(Date.UTC(baseY, baseM + m, 1));
-    const y = d.getUTCFullYear(), mi = d.getUTCMonth();
-    html += '<div class="cal__month' + (m === 1 ? " cal__month--second" : "") + '">' +
-      '<p class="cal__title">' + esc(monthLabel(y, mi)) + '</p>' +
-      '<div class="cal__grid">' +
-      DOW.map(x => '<span class="cal__dow">' + x + '</span>').join("");
+  monthGrid(y, mi).forEach(iso => {
+    if (!iso) { html += '<span class="cal__cell"></span>'; return; }
+    const f = pickerDayFlags(iso, sel, today);
+    const isStart = sel.checkIn === iso;
+    const isEnd = sel.checkOut === iso;
+    const edge = isStart && isEnd ? "only" : isStart ? "start" : isEnd ? "end" : "";
 
-    monthGrid(y, mi).forEach(iso => {
-      if (!iso) { html += '<span class="cal__cell"></span>'; return; }
-      const f = pickerDayFlags(iso, sel, today);
-      const p = pickerDayFlags(iso, shown, today);
-      const isStart = shown.checkIn === iso;
-      const isEnd = shown.checkOut === iso;
-      const edge = isStart && isEnd ? "only" : isStart ? "start" : isEnd ? "end" : "";
-      const between = Boolean(shown.checkIn && shown.checkOut) &&
-        iso > shown.checkIn && iso < shown.checkOut;
-
-      html += '<span class="cal__cell"' +
-        (between ? ' data-in-range="1"' : "") +
-        (edge && shown.checkOut ? ' data-edge="' + edge + '"' : "") + '>' +
-        '<button type="button" class="cal__day" data-cal-day="' + iso + '"' +
-          (f.disabled ? " disabled" : "") +
-          (f.isToday ? ' data-today="1"' : "") +
-          (edge ? ' data-edge="' + edge + '"' : "") +
-          (f.isSeventhNight ? ' data-seventh="1"' : "") +
-          ' aria-label="' + esc(fmtDate(iso)) + '">' +
-          Number(iso.slice(8)) +
-        '</button></span>';
-    });
-    html += '</div></div>';
-  }
+    html += '<span class="cal__cell"' +
+      (f.inRange ? ' data-in-range="1"' : "") +
+      (edge && sel.checkOut ? ' data-edge="' + edge + '"' : "") + '>' +
+      '<button type="button" class="cal__day" data-cal-day="' + iso + '"' +
+        (f.disabled ? " disabled" : "") +
+        (f.isToday ? ' data-today="1"' : "") +
+        (edge ? ' data-edge="' + edge + '"' : "") +
+        (f.isSeventhNight ? ' data-seventh="1"' : "") +
+        ' aria-label="' + esc(fmtDate(iso)) + '">' +
+        Number(iso.slice(8)) +
+      '</button></span>';
+  });
 
   html += '</div><p class="cal__foot">' +
     (awaitingOut
@@ -2967,7 +2958,6 @@ function wire() {
     ui.calOpen = !ui.calOpen;
     if (ui.calOpen) {
       ui.month = (state.checkIn || todayIso()).slice(0, 7) + "-01";
-      ui.hover = "";
     }
     render();
   });
@@ -2993,25 +2983,9 @@ function wire() {
     const next = pickerReduce(
       { checkIn: state.checkIn, checkOut: state.checkOut },
       day.getAttribute("data-cal-day"));
-    ui.hover = "";
-    /* Close once a whole range is in hand. */
-    if (next.checkIn && next.checkOut) ui.calOpen = false;
+    /* Two taps and done: a completed range closes the calendar itself. */
+    if (pickerPhase(next) === "complete") ui.calOpen = false;
     setState({ checkIn: next.checkIn, checkOut: next.checkOut });
-  });
-
-  /* Hover preview, where a pointer exists. Touch simply never fires this. */
-  $("#cal").addEventListener("mouseover", ev => {
-    const day = ev.target.closest("[data-cal-day]");
-    if (!day || day.disabled) return;
-    const iso = day.getAttribute("data-cal-day");
-    if (iso === ui.hover) return;
-    ui.hover = iso;
-    if (state.checkIn && !state.checkOut) renderCalendar();
-  });
-  $("#cal").addEventListener("mouseleave", () => {
-    if (!ui.hover) return;
-    ui.hover = "";
-    if (state.checkIn && !state.checkOut) renderCalendar();
   });
 
   /* A tap anywhere else closes it.
@@ -3121,7 +3095,7 @@ function wire() {
     try { window.localStorage.removeItem(STORAGE_KEY); }
     catch (err) { console.warn("Could not clear saved answers:", err); }
     state = Object.assign({}, DEFAULTS, { extras: Object.assign({}, DEFAULTS.extras) });
-    ui.calOpen = false; ui.hover = ""; ui.month = "";
+    ui.calOpen = false; ui.month = "";
     saveState();
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -3158,6 +3132,7 @@ window.SW = {
   DATE_TTL_MS: DATE_TTL_MS,
   LEGACY_SEEDED_DATES: LEGACY_SEEDED_DATES,
   pickerReduce: pickerReduce,
+  pickerPhase: pickerPhase,
   pickerDayFlags: pickerDayFlags,
   pickerSummary: pickerSummary,
   monthGrid: monthGrid,
