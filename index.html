@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="description" content="Wedding quote estimator for Silent Waters Private Villa, Montego Bay, Jamaica.">
-<title>Wedding Estimate — Silent Waters Private Villa</title>
+<title data-copy="masthead.pageTitle"></title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23FAF9F6'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23827230' text-anchor='middle'%3ESW%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -535,6 +535,14 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   color: var(--ink-soft);
   margin-top: var(--s-2xs);
 }
+/* Optional per-item wording, filled in from PRICES `description` fields. */
+.choice__desc{
+  display: block;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin-top: var(--s-2xs);
+}
 .choice__price{
   display: block;
   font-size: var(--fs-sm);
@@ -821,9 +829,9 @@ details.breakdown[open] > summary::after{ content: "–"; }
 <body>
 
 <header class="masthead">
-  <h1 class="wordmark">Silent Waters<span class="wordmark__sub">Private Villa</span></h1>
+  <h1 class="wordmark"><span data-copy="masthead.name"></span><span class="wordmark__sub" data-copy="masthead.subtitle"></span></h1>
   <hr class="masthead__rule">
-  <p class="masthead__kicker">Montego Bay · Jamaica</p>
+  <p class="masthead__kicker" data-copy="masthead.location"></p>
 </header>
 
 <nav class="progress" id="progress" aria-label="Progress"></nav>
@@ -832,14 +840,14 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 1 — DATES -->
   <section class="step" id="step-0" aria-labelledby="t0">
-    <p class="step__eyebrow">Step 1 of 5</p>
-    <h2 class="step__title" id="t0">Your dates</h2>
-    <p class="step__lede">Tell us when you would like the estate, and we will work out the season and the nightly rate.</p>
+    <p class="step__eyebrow" data-copy-step="1"></p>
+    <h2 class="step__title" id="t0" data-copy="dates.title"></h2>
+    <p class="step__lede" data-copy="dates.lede"></p>
     <div class="field">
-      <span class="field__label" id="dateFieldLabel">Your dates</span>
+      <span class="field__label" id="dateFieldLabel" data-copy="dates.fieldLabel"></span>
       <button type="button" class="datefield" id="dateField"
               aria-expanded="false" aria-labelledby="dateFieldLabel">
-        <span class="datefield__value" id="dateFieldValue">Select your dates</span>
+        <span class="datefield__value" id="dateFieldValue"></span>
         <span class="datefield__icon" aria-hidden="true">▾</span>
       </button>
       <div class="cal" id="cal" hidden></div>
@@ -851,70 +859,70 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 2 — GUESTS -->
   <section class="step" id="step-1" aria-labelledby="t1" hidden>
-    <p class="step__eyebrow">Step 2 of 5</p>
-    <h2 class="step__title" id="t1">Who is staying</h2>
-    <p class="step__lede">Overnight guests only — sleeping at the estate. Visiting event guests come next.</p>
+    <p class="step__eyebrow" data-copy-step="2"></p>
+    <h2 class="step__title" id="t1" data-copy="guests.title"></h2>
+    <p class="step__lede" data-copy="guests.lede"></p>
     <div class="countgrid" id="countgrid"></div>
     <div class="tally">
-      <span class="tally__l">Staying overnight</span>
-      <span class="tally__n"><span id="stayerTotal">2</span> <span class="tally__l">of <span id="stayerCap">24</span></span></span>
+      <span class="tally__l" data-copy="guests.tallyLabel"></span>
+      <span class="tally__n"><span id="stayerTotal">0</span> <span class="tally__l"><span data-copy="guests.tallyOf"></span> <span id="stayerCap"></span></span></span>
     </div>
     <p class="note note--warn" id="stayerNote" hidden></p>
     <p class="note note--brand" id="capNote" hidden></p>
-    <p class="note note--info">The estate rate includes up to 20 guests. Everyone past 20 is charged per night as an additional guest.</p>
+    <p class="note note--info" id="surchargeNote"></p>
   </section>
 
   <!-- STEP 3 — MEAL PLAN -->
   <section class="step" id="step-2" aria-labelledby="t2" hidden>
-    <p class="step__eyebrow">Step 3 of 5</p>
-    <h2 class="step__title" id="t2">Meal plan</h2>
-    <p class="step__lede">Chosen for the whole stay, for every overnight guest.</p>
+    <p class="step__eyebrow" data-copy-step="3"></p>
+    <h2 class="step__title" id="t2" data-copy="meal.title"></h2>
+    <p class="step__lede" data-copy="meal.lede"></p>
     <div class="included" id="alwaysIncluded"></div>
     <div class="choices" id="mealChoices"></div>
     <p class="note note--warn" id="gourmetBarNote" hidden></p>
-    <p class="note note--info">Children under five dine free on both plans.</p>
+    <p class="note note--info" data-copy="meal.under5Note"></p>
   </section>
 
   <!-- STEP 4 — EVENT -->
   <section class="step" id="step-3" aria-labelledby="t3" hidden>
-    <p class="step__eyebrow">Step 4 of 5</p>
-    <h2 class="step__title" id="t3">The event</h2>
-    <p class="step__lede">Your ceremony and reception — including the guests already staying with you.</p>
+    <p class="step__eyebrow" data-copy-step="4"></p>
+    <h2 class="step__title" id="t3" data-copy="event.title"></h2>
+    <p class="step__lede" data-copy="event.lede"></p>
 
     <div class="field">
-      <span class="field__label">Event guests in total</span>
+      <span class="field__label" data-copy="event.guestsLabel"></span>
       <div class="stepper" data-stepper="eventGuests" data-min="10" data-max="125" data-step="1">
-        <button class="stepper__btn" type="button" data-delta="-1" aria-label="Fewer event guests">–</button>
-        <input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="Event guests in total">
-        <button class="stepper__btn" type="button" data-delta="1" aria-label="More event guests">+</button>
+        <button class="stepper__btn" type="button" data-delta="-1" data-copy-aria="event.guestsFewer">–</button>
+        <input class="stepper__value" type="number" inputmode="numeric" data-stepper-value data-copy-aria="event.guestsLabel">
+        <button class="stepper__btn" type="button" data-delta="1" data-copy-aria="event.guestsMore">+</button>
       </div>
     </div>
 
     <div class="field">
-      <span class="field__label">Event days</span>
+      <span class="field__label" data-copy="event.daysLabel"></span>
       <div class="stepper" data-stepper="eventDays" data-min="1" data-max="3" data-step="1">
-        <button class="stepper__btn" type="button" data-delta="-1" aria-label="Fewer event days">–</button>
-        <input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="Event days">
-        <button class="stepper__btn" type="button" data-delta="1" aria-label="More event days">+</button>
+        <button class="stepper__btn" type="button" data-delta="-1" data-copy-aria="event.daysFewer">–</button>
+        <input class="stepper__value" type="number" inputmode="numeric" data-stepper-value data-copy-aria="event.daysLabel">
+        <button class="stepper__btn" type="button" data-delta="1" data-copy-aria="event.daysMore">+</button>
       </div>
-      <p class="note note--info">Each event day carries its own event fee, food, bar and staffing.</p>
+      <p class="note note--info" data-copy="event.daysNote"></p>
     </div>
 
     <div class="field">
-      <span class="field__label">Service style</span>
+      <span class="field__label" data-copy="event.styleLabel"></span>
       <div class="choices choices--split" id="styleChoices"></div>
       <p class="note note--warn" id="platedNote" hidden></p>
     </div>
 
     <div class="field">
-      <span class="field__label" id="menuLabel">Menu</span>
+      <span class="field__label" id="menuLabel" data-copy="event.menuLabel"></span>
       <div class="choices" id="menuChoices" role="radiogroup" aria-labelledby="menuLabel"></div>
       <div class="field" id="cocktailField" hidden>
-        <span class="field__label">Hors d'oeuvres selections</span>
+        <span class="field__label" data-copy="event.selectionsLabel"></span>
         <div class="stepper" data-stepper="cocktailSelections" data-min="4" data-max="12" data-step="1">
-          <button class="stepper__btn" type="button" data-delta="-1" aria-label="Fewer selections">&ndash;</button>
-          <input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="Hors d'oeuvres selections">
-          <button class="stepper__btn" type="button" data-delta="1" aria-label="More selections">+</button>
+          <button class="stepper__btn" type="button" data-delta="-1" data-copy-aria="event.selectionsFewer">&ndash;</button>
+          <input class="stepper__value" type="number" inputmode="numeric" data-stepper-value data-copy-aria="event.selectionsLabel">
+          <button class="stepper__btn" type="button" data-delta="1" data-copy-aria="event.selectionsMore">+</button>
         </div>
         <p class="note note--info" id="cocktailNote"></p>
       </div>
@@ -925,20 +933,20 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 5 — EXTRAS -->
   <section class="step" id="step-4" aria-labelledby="t4" hidden>
-    <p class="step__eyebrow">Step 5 of 5</p>
-    <h2 class="step__title" id="t4">Extras</h2>
-    <p class="step__lede">Optional additions. Everything here can be added or dropped later.</p>
+    <p class="step__eyebrow" data-copy-step="5"></p>
+    <h2 class="step__title" id="t4" data-copy="extras.title"></h2>
+    <p class="step__lede" data-copy="extras.lede"></p>
     <div class="choices" id="extraChoices"></div>
   </section>
 
   <!-- STEP 6 — ESTIMATE -->
   <section class="step" id="step-5" aria-labelledby="t5" hidden>
-    <h2 class="step__title" id="t5">Your estimate</h2>
-    <p class="topline">Rough estimate only — your final quote comes from Silent Waters.</p>
+    <h2 class="step__title" id="t5" data-copy="estimate.title"></h2>
+    <p class="topline" data-copy="estimate.topline"></p>
     <p class="step__lede" id="estimateLede"></p>
 
     <div class="headline">
-      <p class="headline__label">Estimated total</p>
+      <p class="headline__label" data-copy="estimate.totalLabel"></p>
       <p class="headline__range" id="rangeOut">—</p>
       <p class="headline__sub" id="rangeCaption"></p>
       <div class="headline__meta" id="rangeMeta"></div>
@@ -948,28 +956,28 @@ details.breakdown[open] > summary::after{ content: "–"; }
     <div class="lever" id="leverEstimate" hidden></div>
 
     <details class="breakdown" id="breakdown">
-      <summary>Line-item breakdown</summary>
+      <summary><span data-copy="estimate.breakdownToggle"></span></summary>
       <div class="lines" id="lines"></div>
     </details>
 
     <p class="footnote" id="footnotes"></p>
 
     <div class="actions">
-      <a class="btn btn--gold" id="mailtoBtn" href="#">Send this estimate to Silent Waters</a>
-      <button class="btn btn--ghost" id="copyBtn" type="button">Copy estimate</button>
+      <a class="btn btn--gold" id="mailtoBtn" href="#" data-copy="estimate.sendButton"></a>
+      <button class="btn btn--ghost" id="copyBtn" type="button" data-copy="estimate.copyButton"></button>
     </div>
-    <button class="btn btn--ghost btn--wide" id="estimateBack" type="button">Back — change my answers</button>
+    <button class="btn btn--ghost btn--wide" id="estimateBack" type="button" data-copy="estimate.backButton"></button>
 
-    <p class="disclaimer">Estimate only. Prices 2H 2026, subject to change. Your final quote comes from Silent Waters.</p>
-    <button class="startover" id="startOver" type="button">Start over</button>
+    <p class="disclaimer" data-copy="estimate.disclaimer"></p>
+    <button class="startover" id="startOver" type="button" data-copy="estimate.startOver"></button>
   </section>
 
 </main>
 
 <nav class="navbar" id="navbar">
   <div class="navbar__inner">
-    <button class="btn btn--ghost btn--back" id="backBtn" type="button">Back</button>
-    <button class="btn btn--primary" id="nextBtn" type="button">Next</button>
+    <button class="btn btn--ghost btn--back" id="backBtn" type="button" data-copy="nav.back"></button>
+    <button class="btn btn--primary" id="nextBtn" type="button"></button>
   </div>
 </nav>
 
@@ -1089,6 +1097,7 @@ const PRICES = {
       label: "All-Inclusive",
       bestFor: "Best for groups who want everything — meals, snacks and drinks — handled from arrival.",
       adults: 239, teens: 169, kids: 99, under5: 0,
+      description: "",
       barIncluded: true,
       corkage: 0
     },
@@ -1096,6 +1105,7 @@ const PRICES = {
       label: "Gourmet",
       bestFor: "Best for groups who want chef-prepared food at a fixed price, and who are happy to settle the bar separately.",
       adults: 123, teens: 123, kids: 62, under5: 0,
+      description: "",
       /* R2 — food only. Every drink is bought from Silent Waters' inventory
          and billed at the end of the stay. This is NOT estimated anywhere in
          this tool: an understated bar tab is the most damaging thing the page
@@ -1125,20 +1135,22 @@ const PRICES = {
       label: "Plated",
       bestFor: "Seated service, capped at 30 guests.",
       cap: 30,
+      description: "",
       menus: [
-        { key: "extraordinaire", label: "Extraordinaire", price: 137 },
-        { key: "elegante",       label: "Elegante",       price: 115 },
-        { key: "grande",         label: "Grande",         price: 97 }
+        { key: "extraordinaire", label: "Extraordinaire", price: 137, description: "" },
+        { key: "elegante",       label: "Elegante",       price: 115, description: "" },
+        { key: "grande",         label: "Grande",         price: 97, description: "" }
       ]
     },
     buffet: {
       label: "Buffet",
       bestFor: "Stations and platters, works at any size.",
       cap: 125,
+      description: "",
       menus: [
-        { key: "empress", label: "Empress", price: 127 },
-        { key: "regatta", label: "Regatta", price: 107 },
-        { key: "reggae",  label: "Reggae",  price: 89 }
+        { key: "empress", label: "Empress", price: 127, description: "" },
+        { key: "regatta", label: "Regatta", price: 107, description: "" },
+        { key: "reggae",  label: "Reggae",  price: 89, description: "" }
       ]
     },
     /* Menu Options pack p.3: "*Hors d'oeuvres are priced per 30 pieces,
@@ -1149,6 +1161,7 @@ const PRICES = {
       label: "Cocktail",
       bestFor: "Hors d'oeuvres, standing and roaming.",
       cap: 125,
+      description: "",
       piecesPerSelection: 30,
       minSelections: 4,
       maxSelections: 12,
@@ -1317,6 +1330,271 @@ const PRICES = {
     extendedWhenKidsAtLeast: 8
   }
 };
+
+/* =================================================================
+   COPY — every word a guest sees.
+   -----------------------------------------------------------------
+   FOR WHOEVER IS EDITING THE WORDING (you do not need to know how to
+   code to change anything in here):
+
+   Everything between the { } below is text that appears on the screen.
+   Change what is inside the "quote marks" and nothing else. Keep the
+   quote marks, the commas at the end of each line, and any word wrapped
+   in {curly braces} exactly as they are.
+
+   A word in {curly braces} is a blank that fills itself in — {nights}
+   becomes 7, {season} becomes "Low season", and so on. Leave them alone,
+   but you can move them around inside a sentence.
+
+   Anything after a slash-star, like this paragraph, is a note to you and
+   never appears on the screen.
+   ================================================================= */
+const COPY = {
+
+  /* The banner at the very top of every screen. */
+  masthead: {
+    name: "Silent Waters",
+    subtitle: "Private Villa",
+    location: "Montego Bay · Jamaica",
+    pageTitle: "Wedding Estimate — Silent Waters Private Villa"
+  },
+
+  /* The Back and Next buttons pinned to the bottom of the screen. */
+  nav: {
+    back: "Back",
+    next: "Next",
+    seeEstimate: "See estimate",
+    stepLabel: "Step {n} of {total}"
+  },
+
+  /* SCREEN 1 — where guests pick their dates. */
+  dates: {
+    title: "Your dates",
+    lede: "Tell us when you would like the estate, and we will work out the season and the nightly rate.",
+    fieldLabel: "Your dates",
+    fieldEmpty: "Select your dates",
+    seasonWithNights: "<strong>{season}</strong> ({window}) — {nights}. Minimum stay {min} nights.",
+    seasonWithoutNights: "<strong>{season}</strong> ({window}). Minimum stay {min} nights.",
+    belowMinimum: "That is {nights} and {season} normally asks for at least {min}. We have still worked out your estimate — just ask us about the minimum when you write."
+  },
+
+  /* The pop-up calendar on the dates screen. */
+  calendar: {
+    promptPickCheckIn: "Select your check-in date",
+    promptPickCheckOut: "Select your check-out date",
+    promptNights: "<strong>{nights}</strong> — tap to confirm",
+    summaryAwaiting: "{start} – select your check-out date",
+    summaryComplete: "{start} – {end} · {nights}",
+    feeWaivedLegend: "Event fee waived from here",
+    done: "Done",
+    prevMonth: "Previous month",
+    nextMonth: "Next month"
+  },
+
+  /* SCREEN 2 — how many people are sleeping at the villa. */
+  guests: {
+    title: "Who is staying",
+    lede: "Overnight guests only — sleeping at the estate. Visiting event guests come next.",
+    tallyLabel: "Staying overnight",
+    tallyOf: "of",
+    adults: "Adults",
+    adultsHint: "18 and over",
+    teens: "Teens",
+    teensHint: "13 – 17",
+    kids: "Children",
+    kidsHint: "5 – 12",
+    under5: "Under 5",
+    under5Hint: "dine free",
+    needOne: "Add at least one overnight guest to continue.",
+    tooMany: "The estate sleeps {max}. Please write to us about anything larger.",
+    tooManyExtended: "The estate sleeps {max} with a party this size. Please write to us about anything larger.",
+    capRaised: "With {kids} children aged 5–12 we can sleep up to {max} — they double up in the queen sofa beds, plus two extra cots.",
+    surchargeNote: "The estate rate includes up to {included} guests. Everyone past {included} is charged per night as an additional guest."
+  },
+
+  /* SCREEN 3 — choosing All-Inclusive or Gourmet. */
+  meal: {
+    title: "Meal plan",
+    lede: "Chosen for the whole stay, for every overnight guest.",
+    includedTitle: "Included on every booking",
+    includedFoot: "These are part of the nightly rate. No meal plan is required to get them — choosing a plan adds to this, it does not unlock it.",
+    perNight: "${adults} adult · ${teens} teen · ${kids} child, per night",
+    gourmetFlag: "Food only — every drink is billed at check-out and is not part of this estimate",
+    under5Note: "Children under five dine free on both plans.",
+    gourmetWarning: "<strong>{disclosure}.</strong> {detail} {corkage}"
+  },
+
+  /* SCREEN 4 — the wedding itself: guest count, style and menu. */
+  event: {
+    title: "The event",
+    lede: "Your ceremony and reception — including the guests already staying with you.",
+    guestsLabel: "Event guests in total",
+    guestsFewer: "Fewer event guests",
+    guestsMore: "More event guests",
+    daysLabel: "Event days",
+    daysFewer: "Fewer event days",
+    daysMore: "More event days",
+    daysNote: "Each event day has its own food, bar and staffing. The event fee is charged once for the stay.",
+    styleLabel: "Service style",
+    menuLabel: "Menu",
+    perPerson: "${price} per person",
+    platedOverCap: "Plated service is capped at {cap} guests. With {guests} on the list, buffet or cocktail will serve you better — we have estimated it anyway.",
+    venueNote: "<strong>{venue}</strong> — {note} Chosen automatically for {guests} guests.",
+    selectionsLabel: "Hors d'oeuvres selections",
+    selectionsFewer: "Fewer selections",
+    selectionsMore: "More selections",
+    selectionsNote: "Hors d'oeuvres are priced per selection of {pieces} pieces, minimum {min} selections — never per person. Individual selections run ${low} to ${high}. {count} selections is {total} pieces, about {perGuest} per guest at {guests}. Silent Waters will advise on quantity."
+  },
+
+  /* SCREEN 5 — the optional extras checklist. */
+  extras: {
+    title: "Extras",
+    lede: "Optional additions. Everything here can be added or dropped later."
+  },
+
+  /* THE ESTIMATE SCREEN — the result, shown after the five steps. */
+  estimate: {
+    title: "Your estimate",
+    topline: "Rough estimate only — your final quote comes from Silent Waters.",
+    summaryLine: "{start} – {end} · {stayers} staying · {guests} at the event.",
+    totalLabel: "Estimated total",
+    caption: "Catering for all {guests} event guests from the wedding menus. The bar, the staff gratuity and the refundable deposit are not included — each is listed separately below.",
+    breakdownToggle: "Line-item breakdown",
+    sendButton: "Send this estimate to Silent Waters",
+    copyButton: "Copy estimate",
+    backButton: "Back — change my answers",
+    startOver: "Start over",
+    disclaimer: "Estimate only. Prices 2H 2026, subject to change. Your final quote comes from Silent Waters.",
+    copied: "Estimate copied",
+    copyFailed: "Could not copy — please select and copy manually",
+    warningTail: "Do mention it when you write."
+  },
+
+  /* The names and small print on each line of the breakdown table. */
+  lines: {
+    included: "Included with every booking",
+    includedValue: "Included",
+    includedSub: "{items} — no meal plan required",
+    accommodation: "Accommodation",
+    accommodationSub: "{season} · {basis}",
+    accommodationOverflow: " · includes {amount} for guests over {included}",
+    discount: "Direct booking discount −{percent}%",
+    discountSub: "Stays of {nights} nights or more, booked directly with the villa",
+    accommodationNet: "Accommodation after discount",
+    accommodationNetSub: "GCT and staff gratuity are both calculated on this figure",
+    mealPlan: "Meal plan",
+    mealPlanSub: "{plan} · {stayers} guests × {nights}",
+    eventFee: "Event fee",
+    eventFeeWaivedLong: "Waived — stays of {nights} nights or longer",
+    eventFeeWaivedSize: "Waived — six or fewer outside visitors",
+    eventFeeCharged: "One fee for the stay, set by its length ({nights})",
+    eventFood: "Event food",
+    eventFoodSub: "{style} · {menu} · ${price} × {guests} guests × {days}",
+    eventFoodCocktailSub: "{count} selections × {pieces} pieces × {days} · selections run ${low}–${high} each",
+    barIncluded: "Event bar — quoted by Silent Waters",
+    barIncludedValue: "Not estimated",
+    barExcludedValue: "Not included",
+    staff: "Event staff",
+    staffSub: "{roster} · {rate} per event day · representative, quoted per service plan",
+    staffNotNeeded: "Not required at {guests} guests",
+    extras: "Extras",
+    extrasNone: "None selected",
+    gct: "GCT (10%)",
+    gctSub: "On accommodation after discount, meal plan, event fee, event food and extras",
+    total: "Estimated total",
+    totalSub: "Everything above",
+    gratuity: "Staff gratuity — paid in cash at check-out",
+    gratuitySub: "Customary 20% of accommodation, approximately {cash} · {card} if paid by card at 23% · not in the total",
+    deposit: "Refundable damage deposit",
+    depositSub: "Held against the card on file and returned after check-out · not in the total"
+  },
+
+  /* The small grey notes under the breakdown. */
+  footnotes: {
+    included: "Included in the nightly rate on every booking: {items}.",
+    venue: "Venue: {venue} — {note}",
+    gratuity: "The staff gratuity is paid in cash at check-out, not collected in advance. The customary amount is 20% of accommodation ({cash}), or 23% by card ({card}).",
+    bar: "{disclosure}. Beverages are billed by the bottle and case from the à la carte menu, on actual consumption. {corkage}",
+    venueSource: "Venue source: {source}",
+    discountApplies: "The {percent}% direct-booking discount applies because you are staying {nights} nights and booking directly with the villa.",
+    discountAvailable: "Stays of {nights} nights or more booked directly earn a {percent}% discount on accommodation.",
+    staffing: "Event staffing is representative. Silent Waters quotes it per service plan.",
+    deposit: "The {amount} damage deposit is refundable and sits outside the total."
+  },
+
+  /* The nudge shown when a stay is 5 or 6 nights. */
+  lever: {
+    title: "Staying {nights} nights waives the {fee} event fee",
+    bodyCheaper: "You are booked for {current} nights. Checking out on {date} instead removes the event fee entirely — your total would drop by <strong>{delta}</strong>. Worth asking us about.",
+    bodyDearer: "You are booked for {current} nights. Checking out on {date} instead removes the event fee entirely — your total would rise by <strong>{delta}</strong>, because of {extra} more of accommodation and meals. Worth asking us about."
+  },
+
+  /* The email that opens when a guest taps "Send this estimate". */
+  email: {
+    subject: "Wedding estimate request – {start} to {end} – {guests} guests",
+    heading: "SILENT WATERS PRIVATE VILLA — WEDDING ESTIMATE REQUEST",
+    location: "Montego Bay, Jamaica",
+    answersHeading: "YOUR ANSWERS",
+    includedHeading: "INCLUDED ON EVERY BOOKING, NO MEAL PLAN REQUIRED",
+    breakdownHeading: "BREAKDOWN (USD)",
+    totalLabel: "ESTIMATED TOTAL",
+    totalNote: "  Catering for all {guests} event guests from the wedding menus.",
+    notIncludedHeading: "NOT INCLUDED IN THE TOTAL ABOVE",
+    notIncludedGratuity: "  Staff gratuity - paid in cash at check-out. Customary 20% of accommodation,\n    approximately {cash} ({card} if paid by card at 23%).",
+    notIncludedDeposit: "  Refundable damage deposit: {amount} - held against the card on file, returned after check-out.",
+    notIncludedBar: "  The bar - billed on consumption, quoted by Silent Waters.",
+    leverNote: "NOTE: at {week} nights the {fee} event fee is waived. Checking out {date} instead would make the total {total} ({sign}{delta}).",
+    signOff: "Estimate only. Prices 2H 2026, subject to change.\nYour final quote comes from Silent Waters.",
+    datesLabel: "Dates",
+    foodOnlyFlag: " (FOOD ONLY — bar billed at check-out)",
+    underMinimumFlag: " — UNDER MINIMUM",
+    barLabel: "Bar",
+    barNotEstimated: "NOT ESTIMATED",
+    barNotIncluded: "NOT INCLUDED",
+    visitingSuffix: "({visitors} visiting)",
+    minimumSuffix: "{nights} · {season} ({window}), minimum {min}{flag}",
+    overflowSuffix: ", incl. {amount} for guests over {included}",
+    perEventDay: "{roster} at {rate} per event day",
+    venueLine: "Venue: {venue} — {note}",
+    cocktailLine: "{label}: {count} × {pieces} pieces ({total} pieces, about {perGuest} per guest). Selections run \${low}-\${high} each.",
+    menuLine: "{label}: {menu} at \${price} per person"
+  },
+
+  /* The bar lines. The bar is never given a number — these say so. */
+  bar: {
+    eventQuoted: "Event bar — quoted by Silent Waters",
+    allInclusiveNote: "Overnight guests' drinks are covered by All-Inclusive. Drinks for the {visitors} visiting are billed on consumption from the à la carte beverage menu and are quoted by Silent Waters.",
+    cocktailMenuLabel: "Hors d'oeuvres selections"
+  },
+
+  /* Words reused in several places. */
+  common: {
+    night: "night",
+    nights: "nights",
+    day: "day",
+    days: "days",
+    eventDay: "event day",
+    eventDays: "event days",
+    guest: "guest",
+    guests: "guests",
+    none: "none"
+  }
+};
+
+/**
+ * Fills the {blanks} in a COPY string.
+ * t("Minimum stay {min} nights", { min: 3 }) -> "Minimum stay 3 nights"
+ */
+function t(template, vars) {
+  if (template == null) return "";
+  return String(template).replace(/\{(\w+)\}/g, (whole, key) =>
+    vars && Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : whole);
+}
+
+/** "1 night" / "7 nights" — picks the right word from COPY.common. */
+function plural(n, one, many) {
+  return n + " " + (n === 1 ? one : many);
+}
 
 /* =================================================================
    Pricing engine
@@ -1522,13 +1800,10 @@ function calcQuote(input) {
   const visitingGuests = Math.max(0, eventGuests - stayers);
   const barIncluded = plan.barIncluded === true;
   const bar = 0;
-  const barDisclosureLine = barIncluded
-    ? "Event bar — quoted by Silent Waters"
-    : plan.barDisclosure;
+  const barDisclosureLine = barIncluded ? COPY.bar.eventQuoted : plan.barDisclosure;
   const barNote = barIncluded
-    ? "Overnight guests' drinks are covered by All-Inclusive. Drinks for the " +
-      visitingGuests + " visiting " + (visitingGuests === 1 ? "guest" : "guests") +
-      " are billed on consumption from the à la carte beverage menu and are quoted by Silent Waters."
+    ? t(COPY.bar.allInclusiveNote, {
+        visitors: plural(visitingGuests, COPY.common.guest, COPY.common.guests) })
     : plan.barDetail;
 
   /* ---- extra event staff ------------------------------------------ */
@@ -1598,7 +1873,7 @@ function calcQuote(input) {
     styleKey: styleKey,
     styleLabel: style.label,
     menuKey: menu ? menu.key : "cocktail",
-    menuLabel: menu ? menu.label : "Hors d'oeuvres selections",
+    menuLabel: menu ? menu.label : COPY.bar.cocktailMenuLabel,
     menuPrice: menuPrice,
     mealPlanKey: planKey,
     mealPlanLabel: plan.label,
@@ -1799,10 +2074,12 @@ function pickerSummary(sel) {
     return new Date(t).toLocaleDateString("en-US",
       { month: "short", day: "numeric", timeZone: "UTC" });
   };
-  if (!outIso) return short(inIso) + " – select your check-out date";
+  if (!outIso) return t(COPY.calendar.summaryAwaiting, { start: short(inIso) });
   const n = nightsBetween(inIso, outIso);
-  return short(inIso) + " – " + short(outIso) + " · " + n +
-    (n === 1 ? " night" : " nights");
+  return t(COPY.calendar.summaryComplete, {
+    start: short(inIso), end: short(outIso),
+    nights: plural(n, COPY.common.night, COPY.common.nights)
+  });
 }
 
 /* =================================================================
@@ -1820,6 +2097,51 @@ const DEFAULTS = {
 };
 
 const STORAGE_KEY = "silent-waters-quote-v1";
+
+/* Saved dates go stale. Someone who opened the page last week should not
+   come back to last week's dates still sitting in the field. */
+const DATE_TTL_MS = 24 * 60 * 60 * 1000;
+
+/* Date pairs an earlier build seeded by default. Discarded on sight,
+   however recently they were saved. */
+const LEGACY_SEEDED_DATES = [
+  { checkIn: "2026-08-23", checkOut: "2026-08-25" }
+];
+
+/**
+ * Decides whether stored dates may be restored. Pure — hand it the clock.
+ * Only ever clears dates; every other stored answer is the caller's to keep.
+ *
+ * @param {object} stored  the parsed localStorage payload
+ * @param {number} nowMs   current time in ms
+ * @param {string} today   today as yyyy-mm-dd
+ * @returns {{checkIn:string, checkOut:string, discarded:boolean, reason:string}}
+ */
+function reconcileStoredDates(stored, nowMs, today) {
+  const src = stored || {};
+  const out = {
+    checkIn: src.checkIn || "",
+    checkOut: src.checkOut || "",
+    discarded: false,
+    reason: ""
+  };
+  const drop = reason => ({ checkIn: "", checkOut: "", discarded: true, reason: reason });
+
+  if (!out.checkIn) return out;
+
+  if (LEGACY_SEEDED_DATES.some(d =>
+      d.checkIn === out.checkIn && d.checkOut === out.checkOut)) {
+    return drop("legacy-default");
+  }
+  /* A backwards pair from the old native inputs. */
+  if (out.checkOut && out.checkOut <= out.checkIn) return drop("invalid-range");
+  if (out.checkIn < today) return drop("past-check-in");
+
+  const savedAt = Number(src.savedAt) || 0;
+  if (!savedAt || nowMs - savedAt > DATE_TTL_MS) return drop("stale");
+
+  return out;
+}
 const STEP_COUNT = 6;      /* screens, including the estimate */
 const INPUT_STEPS = 5;     /* the estimate sits outside the numbering */
 /* Standard sleeping capacity. The cap rises to 28 with eight or more
@@ -1828,16 +2150,22 @@ const MAX_STAYERS = 24;
 const MAX_STAYERS_ANY = 28;
 
 const COUNT_FIELDS = [
-  { key: "adults", label: "Adults",  hint: "18 and over" },
-  { key: "teens",  label: "Teens",   hint: "13 – 17" },
-  { key: "kids",   label: "Children", hint: "5 – 12" },
-  { key: "under5", label: "Under 5", hint: "dine free" }
+  { key: "adults", labelKey: "guests.adults", hintKey: "guests.adultsHint" },
+  { key: "teens",  labelKey: "guests.teens",  hintKey: "guests.teensHint" },
+  { key: "kids",   labelKey: "guests.kids",   hintKey: "guests.kidsHint" },
+  { key: "under5", labelKey: "guests.under5", hintKey: "guests.under5Hint" }
 ];
 
 /* Ephemeral picker chrome — deliberately not persisted. */
 const ui = { calOpen: false, month: "", hover: "" };
 
 let state = loadState();
+
+/* Flush the cleaned state straight back so discarded dates really go. */
+if (state.datesWereDiscarded) {
+  delete state.datesWereDiscarded;
+  saveState();
+}
 
 function loadState() {
   let stored = null;
@@ -1851,18 +2179,26 @@ function loadState() {
   next.extras = Object.assign({}, DEFAULTS.extras, (stored && stored.extras) || {});
   next.step = clamp(toInt(next.step, 0), 0, STEP_COUNT - 1);
 
-  /* Migration. Earlier builds used two native date inputs, which allowed a
-     check-out on or before the check-in. Drop any such stored pair rather
-     than letting it reach the pricing engine. */
-  if (next.checkOut && (!next.checkIn || next.checkOut <= next.checkIn)) {
-    next.checkOut = "";
+  /* Dates, and only dates, may be discarded as stale. Guest counts, meal
+     plan and everything else are kept whatever happens here. */
+  const dates = reconcileStoredDates(stored, Date.now(), todayIso());
+  next.checkIn = dates.checkIn;
+  next.checkOut = dates.checkOut;
+  if (dates.discarded) {
+    next.step = 0;
+    /* Marked so boot can rewrite storage without the stale dates, rather
+       than leaving them to be re-discarded on every future load. */
+    next.datesWereDiscarded = true;
   }
+  delete next.savedAt;
   return next;
 }
 
 function saveState() {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    /* Stamped so reconcileStoredDates can tell fresh dates from stale. */
+    window.localStorage.setItem(STORAGE_KEY,
+      JSON.stringify(Object.assign({}, state, { savedAt: Date.now() })));
   } catch (err) {
     console.warn("Could not save answers:", err);
   }
@@ -1911,6 +2247,27 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+/** COPY lookup by dotted path: copy("dates.title"). */
+function copy(path) {
+  return path.split(".").reduce((o, k) => (o == null ? o : o[k]), COPY);
+}
+
+/** Paints every data-copy hook in the markup. Runs once, on boot. */
+function paintStatic() {
+  $$("[data-copy]").forEach(node => {
+    node.textContent = copy(node.getAttribute("data-copy")) || "";
+  });
+  $$("[data-copy-aria]").forEach(node => {
+    node.setAttribute("aria-label", copy(node.getAttribute("data-copy-aria")) || "");
+  });
+  $$("[data-copy-step]").forEach(node => {
+    node.textContent = t(COPY.nav.stepLabel,
+      { n: node.getAttribute("data-copy-step"), total: INPUT_STEPS });
+  });
+  $("#surchargeNote").innerHTML = "<span>" +
+    esc(t(COPY.guests.surchargeNote, { included: PRICES.extraGuest.includedUpTo })) + "</span>";
+}
+
 /* =================================================================
    One-time scaffolding
    ================================================================= */
@@ -1926,14 +2283,15 @@ function buildCounters() {
   const wrap = $("#countgrid");
   wrap.innerHTML = "";
   COUNT_FIELDS.forEach(f => {
+    const label = copy(f.labelKey), hint = copy(f.hintKey);
     const box = el("div", { class: "count" });
     box.innerHTML =
-      '<span class="count__label">' + esc(f.label) +
-      ' <span class="count__hint">' + esc(f.hint) + '</span></span>' +
+      '<span class="count__label">' + esc(label) +
+      ' <span class="count__hint">' + esc(hint) + '</span></span>' +
       '<div class="stepper" data-stepper="' + f.key + '" data-min="0" data-max="' + MAX_STAYERS_ANY + '" data-step="1">' +
-        '<button class="stepper__btn" type="button" data-delta="-1" aria-label="Fewer ' + esc(f.label) + '">&ndash;</button>' +
-        '<input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="' + esc(f.label) + '">' +
-        '<button class="stepper__btn" type="button" data-delta="1" aria-label="More ' + esc(f.label) + '">+</button>' +
+        '<button class="stepper__btn" type="button" data-delta="-1" aria-label="' + esc(label) + ' −">&ndash;</button>' +
+        '<input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="' + esc(label) + '">' +
+        '<button class="stepper__btn" type="button" data-delta="1" aria-label="' + esc(label) + ' +">+</button>' +
       '</div>';
     wrap.appendChild(box);
   });
@@ -1949,12 +2307,13 @@ function buildMealChoices() {
       '<input type="radio" name="mealPlan" value="' + key + '">' +
       '<span class="choice__title">' + esc(p.label) + '</span>' +
       '<span class="choice__meta">' + esc(p.bestFor) + '</span>' +
-      '<span class="choice__price">$' + p.adults + ' adult · $' + p.teens + ' teen · $' +
-        p.kids + ' child, per night</span>' +
-      (p.barIncluded
-        ? ''
-        : '<span class="choice__flag">Food only — every drink is billed at check-out and is ' +
-          'not part of this estimate</span>');
+      (p.description
+        ? '<span class="choice__desc">' + esc(p.description) + '</span>' : '') +
+      '<span class="choice__price">' +
+        esc(t(COPY.meal.perNight, { adults: p.adults, teens: p.teens, kids: p.kids })) +
+      '</span>' +
+      (p.barIncluded ? '' :
+        '<span class="choice__flag">' + esc(COPY.meal.gourmetFlag) + '</span>');
     wrap.appendChild(label);
   });
 }
@@ -1968,7 +2327,9 @@ function buildStyleChoices() {
     label.innerHTML =
       '<input type="radio" name="eventStyle" value="' + key + '">' +
       '<span class="choice__title">' + esc(s.label) + '</span>' +
-      '<span class="choice__meta">' + esc(s.bestFor) + '</span>';
+      '<span class="choice__meta">' + esc(s.bestFor) + '</span>' +
+      (s.description
+        ? '<span class="choice__desc">' + esc(s.description) + '</span>' : '');
     wrap.appendChild(label);
   });
 }
@@ -1999,7 +2360,9 @@ function renderMenuChoices(q) {
       '<input type="radio" name="menuKey" value="' + m.key + '"' +
         (m.key === q.menuKey ? " checked" : "") + '>' +
       '<span class="choice__title">' + esc(m.label) + '</span>' +
-      '<span class="choice__price">$' + m.price + ' per person</span>';
+      (m.description
+        ? '<span class="choice__desc">' + esc(m.description) + '</span>' : '') +
+      '<span class="choice__price">' + esc(t(COPY.event.perPerson, { price: m.price })) + '</span>';
     wrap.appendChild(label);
   });
   show($("#menuLabel"), !q.isCocktail);
@@ -2024,7 +2387,7 @@ function render() {
   $("#backBtn").disabled = state.step === 0;
   const onLast = state.step === STEP_COUNT - 1;
   show($("#navbar"), !onLast);
-  $("#nextBtn").textContent = state.step === INPUT_STEPS - 1 ? "See estimate" : "Next";
+  $("#nextBtn").textContent = state.step === INPUT_STEPS - 1 ? COPY.nav.seeEstimate : COPY.nav.next;
   $("#nextBtn").disabled = !canAdvance(q);
 
   renderDates(q);
@@ -2071,12 +2434,13 @@ function renderCalendar() {
 
   let prompt;
   if (!sel.checkIn) {
-    prompt = "Select your check-in date";
+    prompt = esc(COPY.calendar.promptPickCheckIn);
   } else if (awaitingOut) {
     const n = preview ? nightsBetween(sel.checkIn, preview.checkOut) : 0;
     prompt = n > 0
-      ? "<strong>" + n + (n === 1 ? " night" : " nights") + "</strong> — tap to confirm"
-      : "Select your check-out date";
+      ? t(COPY.calendar.promptNights,
+          { nights: plural(n, COPY.common.night, COPY.common.nights) })
+      : esc(COPY.calendar.promptPickCheckOut);
   } else {
     prompt = esc(pickerSummary(sel));
   }
@@ -2086,10 +2450,10 @@ function renderCalendar() {
 
   let html =
     '<div class="cal__head">' +
-      '<button type="button" class="cal__nav" data-cal-nav="-1" aria-label="Previous month"' +
+      '<button type="button" class="cal__nav" data-cal-nav="-1" aria-label="' + esc(COPY.calendar.prevMonth) + '"' +
         (atStart ? " disabled" : "") + '>‹</button>' +
       '<span class="cal__prompt">' + prompt + '</span>' +
-      '<button type="button" class="cal__nav" data-cal-nav="1" aria-label="Next month">›</button>' +
+      '<button type="button" class="cal__nav" data-cal-nav="1" aria-label="' + esc(COPY.calendar.nextMonth) + '">›</button>' +
     '</div><div class="cal__months">';
 
   for (let m = 0; m < 2; m++) {
@@ -2127,9 +2491,10 @@ function renderCalendar() {
 
   html += '</div><p class="cal__foot">' +
     (awaitingOut
-      ? '<span class="cal__legend">Event fee waived from here</span>'
+      ? '<span class="cal__legend">' + esc(COPY.calendar.feeWaivedLegend) + '</span>'
       : '<span></span>') +
-    '<button type="button" class="cal__done" data-cal-close="1">Done</button></p>';
+    '<button type="button" class="cal__done" data-cal-close="1">' +
+      esc(COPY.calendar.done) + '</button></p>';
 
   cal.innerHTML = html;
 }
@@ -2139,20 +2504,19 @@ function renderDates(q) {
   const summary = pickerSummary({ checkIn: state.checkIn, checkOut: state.checkOut });
   field.classList.toggle("datefield--empty", !summary);
   $("#dateFieldValue").innerHTML = summary
-    ? esc(summary).replace(/·\s([0-9]+\s+nights?)/,
+    ? esc(summary).replace(/·\s([0-9]+\s+\S+)$/,
         '· <span class="datefield__nights">$1</span>')
-    : "Select your dates";
+    : esc(COPY.dates.fieldEmpty);
   renderCalendar();
 
   const seasonNote = $("#seasonNote");
-  if (q.seasonKey && q.nights > 0) {
-    seasonNote.innerHTML = "<span><strong>" + esc(q.seasonLabel) + "</strong> (" +
-      esc(q.seasonWindow) + ") — " + q.nights + " " + (q.nights === 1 ? "night" : "nights") +
-      ". Minimum stay " + q.minNights + " nights.</span>";
-    show(seasonNote, true);
-  } else if (q.seasonKey) {
-    seasonNote.innerHTML = "<span><strong>" + esc(q.seasonLabel) + "</strong> (" +
-      esc(q.seasonWindow) + "). Minimum stay " + q.minNights + " nights.</span>";
+  if (q.seasonKey) {
+    const vars = {
+      season: esc(q.seasonLabel), window: esc(q.seasonWindow), min: q.minNights,
+      nights: plural(q.nights, COPY.common.night, COPY.common.nights)
+    };
+    seasonNote.innerHTML = "<span>" + t(q.nights > 0
+      ? COPY.dates.seasonWithNights : COPY.dates.seasonWithoutNights, vars) + "</span>";
     show(seasonNote, true);
   } else {
     show(seasonNote, false);
@@ -2160,10 +2524,10 @@ function renderDates(q) {
 
   const minNote = $("#minNote");
   if (q.belowMinimum) {
-    minNote.innerHTML = "<span>That is " + q.nights + " " +
-      (q.nights === 1 ? "night" : "nights") + " and " + esc(q.seasonLabel) +
-      " normally asks for at least " + q.minNights +
-      ". We have still worked out your estimate — just ask us about the minimum when you write.</span>";
+    minNote.innerHTML = "<span>" + t(COPY.dates.belowMinimum, {
+      nights: plural(q.nights, COPY.common.night, COPY.common.nights),
+      season: esc(q.seasonLabel), min: q.minNights
+    }) + "</span>";
     show(minNote, true);
   } else {
     show(minNote, false);
@@ -2181,12 +2545,12 @@ function renderGuests(q) {
   const note = $("#stayerNote");
   const capNote = $("#capNote");
   if (q.stayers === 0) {
-    note.innerHTML = "<span>Add at least one overnight guest to continue.</span>";
+    note.innerHTML = "<span>" + esc(COPY.guests.needOne) + "</span>";
     show(note, true);
   } else if (q.overCapacity) {
-    note.innerHTML = "<span>The estate sleeps " + q.maxStayers +
-      (q.occupancyExtended ? " with a party this size" : "") +
-      ". Please write to us about anything larger.</span>";
+    note.innerHTML = "<span>" + esc(t(q.occupancyExtended
+      ? COPY.guests.tooManyExtended : COPY.guests.tooMany,
+      { max: q.maxStayers })) + "</span>";
     show(note, true);
   } else {
     show(note, false);
@@ -2194,9 +2558,8 @@ function renderGuests(q) {
 
   /* Say why the cap moved, rather than letting it change silently. */
   if (q.occupancyExtended) {
-    capNote.innerHTML = "<span>With " + q.counts.kids +
-      " children aged 5–12 we can sleep up to " + PRICES.occupancy.extendedMax +
-      " — they double up in the queen sofa beds, plus two extra cots.</span>";
+    capNote.innerHTML = "<span>" + esc(t(COPY.guests.capRaised,
+      { kids: q.counts.kids, max: PRICES.occupancy.extendedMax })) + "</span>";
     show(capNote, true);
   } else {
     show(capNote, false);
@@ -2209,18 +2572,17 @@ function renderLever(node, lever) {
   if (!node) return;
   if (!lever.applies) { show(node, false); return; }
 
-  const saving = lever.cheaper
-    ? "your total would drop by <strong>" + money.format(Math.abs(lever.delta)) + "</strong>"
-    : "your total would rise by <strong>" + money.format(lever.delta) + "</strong>, because of " +
-      lever.extraNights + " extra " + (lever.extraNights === 1 ? "night" : "nights") +
-      " of accommodation and meals";
-
+  const vars = {
+    nights: PRICES.weekFromNights,
+    fee: money.format(lever.feeWaived),
+    current: lever.nights,
+    date: esc(fmtDate(lever.checkOut)),
+    delta: money.format(Math.abs(lever.delta)),
+    extra: plural(lever.extraNights, COPY.common.night, COPY.common.nights)
+  };
   node.innerHTML =
-    '<span class="lever__title">Staying ' + PRICES.weekFromNights +
-      ' nights waives the ' + money.format(lever.feeWaived) + ' event fee</span>' +
-    'You are booked for ' + lever.nights + ' nights. Checking out on ' +
-    esc(fmtDate(lever.checkOut)) + ' instead removes the event fee entirely — ' +
-    saving + '. Worth asking us about.';
+    '<span class="lever__title">' + t(COPY.lever.title, vars) + '</span>' +
+    t(lever.cheaper ? COPY.lever.bodyCheaper : COPY.lever.bodyDearer, vars);
   show(node, true);
 }
 
@@ -2231,20 +2593,21 @@ function renderMeal(q) {
   const inc = $("#alwaysIncluded");
   if (inc && !inc.dataset.built) {
     inc.innerHTML =
-      '<span class="included__title">Included on every booking</span>' +
+      '<span class="included__title">' + esc(COPY.meal.includedTitle) + '</span>' +
       '<ul class="included__list">' +
         PRICES.alwaysIncluded.map(i => '<li>' + esc(i) + '</li>').join("") +
       '</ul>' +
-      '<p class="included__foot">These are part of the nightly rate. No meal plan is required ' +
-      'to get them — choosing a plan adds to this, it does not unlock it.</p>';
+      '<p class="included__foot">' + esc(COPY.meal.includedFoot) + '</p>';
     inc.dataset.built = "1";
   }
 
   /* R2 — the Gourmet bar disclosure, up front at the point of choosing. */
   const note = $("#gourmetBarNote");
   if (q && !q.barIncluded) {
-    note.innerHTML = "<span><strong>" + esc(q.barDisclosure) + ".</strong> " +
-      esc(q.barDetail || "") + " " + esc(q.corkageNote) + "</span>";
+    note.innerHTML = "<span>" + t(COPY.meal.gourmetWarning, {
+      disclosure: esc(q.barDisclosure), detail: esc(q.barDetail || ""),
+      corkage: esc(q.corkageNote || "")
+    }) + "</span>";
     show(note, true);
   } else {
     show(note, false);
@@ -2264,26 +2627,26 @@ function renderEvent(q) {
   if (cs && document.activeElement !== cs) cs.value = state.cocktailSelections;
   const cn = $("#cocktailNote");
   if (cn && q.isCocktail) {
-    cn.innerHTML = "<span>Hors d'oeuvres are priced per selection of " +
-      PRICES.eventStyles.cocktail.piecesPerSelection + " pieces, minimum " +
-      PRICES.eventStyles.cocktail.minSelections + " selections — never per person. " +
-      "Individual selections run $" + q.selectionMin + " to $" + q.selectionMax + ". " +
-      q.selections + " selections is " + q.pieces + " pieces, about " + q.piecesPerGuest +
-      " per guest at " + q.eventGuests + ". Silent Waters will advise on quantity.</span>";
+    cn.innerHTML = "<span>" + esc(t(COPY.event.selectionsNote, {
+      pieces: PRICES.eventStyles.cocktail.piecesPerSelection,
+      min: PRICES.eventStyles.cocktail.minSelections,
+      low: q.selectionMin, high: q.selectionMax,
+      count: q.selections, total: q.pieces,
+      perGuest: q.piecesPerGuest, guests: q.eventGuests
+    })) + "</span>";
   }
 
   const plated = $("#platedNote");
   if (q.platedOverCap) {
-    plated.innerHTML = "<span>Plated service is capped at " +
-      PRICES.eventStyles.plated.cap + " guests. With " + q.eventGuests +
-      " on the list, buffet or cocktail will serve you better — we have estimated it anyway.</span>";
+    plated.innerHTML = "<span>" + esc(t(COPY.event.platedOverCap, {
+      cap: PRICES.eventStyles.plated.cap, guests: q.eventGuests })) + "</span>";
     show(plated, true);
   } else {
     show(plated, false);
   }
 
-  $("#venueNote").innerHTML = "<span><strong>" + esc(q.venue) + "</strong> — " +
-    esc(q.venueNote) + " Chosen automatically for " + q.eventGuests + " guests.</span>";
+  $("#venueNote").innerHTML = "<span>" + t(COPY.event.venueNote, {
+    venue: esc(q.venue), note: esc(q.venueNote), guests: q.eventGuests }) + "</span>";
   syncStepperButtons();
 }
 
@@ -2313,104 +2676,99 @@ function lineRow(name, sub, value, cls) {
 }
 
 function breakdownRows(q) {
-  const L = q.lines;
+  const L = q.lines, C = COPY.lines;
   const rows = [];
+  const nightsWord = n => plural(n, COPY.common.night, COPY.common.nights);
+  const daysWord = n => plural(n, COPY.common.day, COPY.common.days);
 
-  /* R1 — included on every booking, meal plan or not. */
-  rows.push(lineRow("Included with every booking",
-    q.alwaysIncluded.join(" · ") + " — no meal plan required",
-    "Included", "line--included"));
+  rows.push(lineRow(C.included,
+    t(C.includedSub, { items: q.alwaysIncluded.join(" · ") }),
+    C.includedValue, "line--included"));
 
-  rows.push(lineRow("Accommodation",
-    q.seasonLabel + " · " + q.rateBasis +
+  rows.push(lineRow(C.accommodation,
+    t(C.accommodationSub, { season: q.seasonLabel, basis: q.rateBasis }) +
     (q.accommodationOverflow > 0
-      ? " · includes " + money2.format(q.accommodationOverflow) + " for guests over 20"
+      ? t(C.accommodationOverflow, {
+          amount: money2.format(q.accommodationOverflow),
+          included: PRICES.extraGuest.includedUpTo })
       : ""),
     money2.format(q.accommodationPreDiscount)));
 
-  /* Statement p.1 — the direct-booking discount, as its own negative line. */
   if (q.discountApplies) {
-    rows.push(lineRow("Direct booking discount −" + Math.round(q.discountRate * 100) + "%",
-      "Stays of " + PRICES.weekFromNights + " nights or more, booked directly with the villa",
+    const pct = Math.round(q.discountRate * 100);
+    rows.push(lineRow(t(C.discount, { percent: pct }),
+      t(C.discountSub, { nights: PRICES.weekFromNights }),
       "−" + money2.format(q.accommodationDiscount), "line--credit"));
-    rows.push(lineRow("Accommodation after discount",
-      "GCT and staff gratuity are both calculated on this figure",
+    rows.push(lineRow(C.accommodationNet, C.accommodationNetSub,
       money2.format(L.accommodation), "line--sub"));
   }
 
-  rows.push(lineRow("Meal plan",
-    q.mealPlanLabel + " · " + q.stayers + " guests × " + q.nights +
-      (q.nights === 1 ? " night" : " nights"),
+  rows.push(lineRow(C.mealPlan,
+    t(C.mealPlanSub, { plan: q.mealPlanLabel, stayers: q.stayers,
+                       nights: nightsWord(q.nights) }),
     money2.format(L.mealPlan)));
 
-  rows.push(lineRow("Event fee",
+  rows.push(lineRow(C.eventFee,
     q.eventFeeWaived
       ? (q.nights >= PRICES.weekFromNights
-          ? "Waived — stays of 7 nights or longer"
-          : "Waived — six or fewer outside visitors")
-      : "One fee for the stay, set by its length (" + q.nights + " nights)",
+          ? t(C.eventFeeWaivedLong, { nights: PRICES.weekFromNights })
+          : C.eventFeeWaivedSize)
+      : t(C.eventFeeCharged, { nights: nightsWord(q.nights) }),
     money2.format(L.eventFee),
     q.eventFeeWaived ? "line--muted" : ""));
 
-  rows.push(lineRow("Event food",
+  rows.push(lineRow(C.eventFood,
     q.isCocktail
-      ? q.selections + " selections × " + q.pieces / q.selections + " pieces × " + q.eventDays +
-        (q.eventDays === 1 ? " day" : " days") + " · selections run $" +
-        q.selectionMin + "–$" + q.selectionMax + " each"
-      : q.styleLabel + " · " + q.menuLabel + " · $" + q.menuPrice + " × " + q.eventGuests +
-        " guests × " + q.eventDays + (q.eventDays === 1 ? " day" : " days"),
+      ? t(C.eventFoodCocktailSub, {
+          count: q.selections, pieces: q.pieces / q.selections,
+          days: daysWord(q.eventDays), low: q.selectionMin, high: q.selectionMax })
+      : t(C.eventFoodSub, {
+          style: q.styleLabel, menu: q.menuLabel, price: q.menuPrice,
+          guests: q.eventGuests, days: daysWord(q.eventDays) }),
     money2.format(L.eventFood)));
 
-  /* No document prices a bar per person, so it never carries a number. */
   rows.push(lineRow(q.barDisclosure, q.barNote,
-    q.barIncluded ? "Not estimated" : "Not included", "line--disclose"));
+    q.barIncluded ? C.barIncludedValue : C.barExcludedValue, "line--disclose"));
 
-  rows.push(lineRow("Event staff",
+  rows.push(lineRow(C.staff,
     q.staffPerDay > 0
-      ? q.staffRoster.map(r => r.qty + "× " + r.role).join(", ") + " · " +
-        money2.format(q.staffPerDay) + " per event day · representative, quoted per service plan"
-      : "Not required at " + q.eventGuests + " guests",
+      ? t(C.staffSub, {
+          roster: q.staffRoster.map(r => r.qty + "× " + r.role).join(", "),
+          rate: money2.format(q.staffPerDay) })
+      : t(C.staffNotNeeded, { guests: q.eventGuests }),
     money2.format(L.staff),
     q.staffPerDay > 0 ? "" : "line--muted"));
 
-  rows.push(lineRow("Extras",
+  rows.push(lineRow(C.extras,
     q.extrasDetail.length
       ? q.extrasDetail.map(x => x.label + (x.units > 1 ? " ×" + x.units : "")).join(", ")
-      : "None selected",
+      : C.extrasNone,
     money2.format(L.extras),
     q.extrasDetail.length ? "" : "line--muted"));
 
-  rows.push(lineRow("GCT (10%)",
-    "On accommodation after discount, meal plan, event fee, event food and extras",
-    money2.format(q.gct)));
+  rows.push(lineRow(C.gct, C.gctSub, money2.format(q.gct)));
 
-  rows.push(lineRow("Estimated total", "Everything above",
-    money2.format(q.total), "line--total"));
+  rows.push(lineRow(C.total, C.totalSub, money2.format(q.total), "line--total"));
 
   /* Neither of these is collected up front, so neither is in the total. */
-  rows.push(lineRow("Staff gratuity — paid in cash at check-out",
-    "Customary 20% of accommodation, approximately " + money2.format(q.gratuity) +
-      " · " + money2.format(q.gratuityOnCard) + " if paid by card at 23% · not in the total",
+  rows.push(lineRow(C.gratuity,
+    t(C.gratuitySub, {
+      cash: money2.format(q.gratuity), card: money2.format(q.gratuityOnCard) }),
     "≈ " + money2.format(q.gratuity), "line--muted"));
 
-  rows.push(lineRow("Refundable damage deposit",
-    "Held against the card on file and returned after check-out · not in the total",
-    money2.format(q.deposit), "line--muted"));
+  rows.push(lineRow(C.deposit, C.depositSub, money2.format(q.deposit), "line--muted"));
 
   return rows.join("");
 }
 
 function renderEstimate(q) {
-  $("#estimateLede").textContent =
-    fmtDate(state.checkIn) + " – " + fmtDate(state.checkOut) + " · " + q.stayers +
-    " staying · " + q.eventGuests + " at the event.";
+  $("#estimateLede").textContent = t(COPY.estimate.summaryLine, {
+    start: fmtDate(q.checkIn), end: fmtDate(q.checkOut),
+    stayers: q.stayers, guests: q.eventGuests });
 
   $("#rangeOut").innerHTML = money.format(q.total);
 
-  $("#rangeCaption").innerHTML =
-    "Catering for all " + q.eventGuests + " event guests from the wedding menus. " +
-    "The bar, the staff gratuity and the refundable deposit are not included — each is " +
-    "listed separately below.";
+  $("#rangeCaption").textContent = t(COPY.estimate.caption, { guests: q.eventGuests });
 
   $("#rangeMeta").innerHTML =
     "<span>" + esc(q.seasonLabel) + "</span>" +
@@ -2421,17 +2779,21 @@ function renderEstimate(q) {
   const warn = $("#estimateWarn");
   const warnings = [];
   if (q.belowMinimum) {
-    warnings.push("Your stay is under the " + q.minNights + "-night minimum for " +
-      q.seasonLabel + ".");
+    warnings.push(t(COPY.dates.belowMinimum, {
+      nights: plural(q.nights, COPY.common.night, COPY.common.nights),
+      season: q.seasonLabel, min: q.minNights }));
   }
   if (q.platedOverCap) {
-    warnings.push("Plated service is capped at " + PRICES.eventStyles.plated.cap + " guests.");
+    warnings.push(t(COPY.event.platedOverCap, {
+      cap: PRICES.eventStyles.plated.cap, guests: q.eventGuests }));
   }
   if (q.overCapacity) {
-    warnings.push("The estate sleeps " + q.maxStayers + " overnight.");
+    warnings.push(t(q.occupancyExtended
+      ? COPY.guests.tooManyExtended : COPY.guests.tooMany, { max: q.maxStayers }));
   }
   if (warnings.length) {
-    warn.innerHTML = "<span>" + warnings.map(esc).join(" ") + " Do mention it when you write.</span>";
+    warn.innerHTML = "<span>" + warnings.map(esc).join(" ") + " " +
+      esc(COPY.estimate.warningTail) + "</span>";
     show(warn, true);
   } else {
     show(warn, false);
@@ -2441,23 +2803,19 @@ function renderEstimate(q) {
 
   $("#lines").innerHTML = breakdownRows(q);
 
+  const F = COPY.footnotes;
+  const pct = Math.round(q.discountRate * 100);
   const notes = [
-    "Included in the nightly rate on every booking: " +
-      q.alwaysIncluded.join(", ").toLowerCase() + ".",
-    "Venue: " + q.venue + " — " + q.venueNote,
-    "The staff gratuity is paid in cash at check-out, not collected in advance. The customary " +
-      "amount is 20% of accommodation (" + money2.format(q.gratuity) + "), or 23% by card (" +
-      money2.format(q.gratuityOnCard) + ").",
-    q.barDisclosure + ". Beverages are billed by the bottle and case from the à la carte menu, " +
-      "on actual consumption. " + (q.corkageNote || ""),
-    "Venue source: " + (q.venueSource || "Silent Waters"),
+    t(F.included, { items: q.alwaysIncluded.join(", ").toLowerCase() }),
+    t(F.venue, { venue: q.venue, note: q.venueNote }),
+    t(F.gratuity, { cash: money2.format(q.gratuity), card: money2.format(q.gratuityOnCard) }),
+    t(F.bar, { disclosure: q.barDisclosure, corkage: q.corkageNote || "" }),
+    t(F.venueSource, { source: q.venueSource || COPY.masthead.name }),
     q.discountApplies
-      ? "The " + Math.round(q.discountRate * 100) + "% direct-booking discount applies because you are " +
-        "staying " + q.nights + " nights and booking directly with the villa."
-      : "Stays of " + PRICES.weekFromNights + " nights or more booked directly earn a " +
-        Math.round(q.discountRate * 100) + "% discount on accommodation.",
-    "Event staffing is representative. Silent Waters quotes it per service plan.",
-    "The " + money2.format(q.deposit) + " damage deposit is refundable and sits outside the total."
+      ? t(F.discountApplies, { percent: pct, nights: q.nights })
+      : t(F.discountAvailable, { nights: PRICES.weekFromNights, percent: pct }),
+    F.staffing,
+    t(F.deposit, { amount: money2.format(q.deposit) })
   ];
   $("#footnotes").innerHTML = notes.map(n => esc(n)).join("<br>");
 
@@ -2468,114 +2826,114 @@ function renderEstimate(q) {
    Plain-text estimate — used for both mailto and clipboard
    ================================================================= */
 function estimateText(q) {
-  const L = q.lines;
-  const nl = "\n";
+  const L = q.lines, C = COPY.email, LN = COPY.lines;
   const rows = [];
+  const pad = (label, value) => (label + " ").padEnd(22, ".") + " " + value;
+  const nightsWord = n => plural(n, COPY.common.night, COPY.common.nights);
 
-  rows.push("SILENT WATERS PRIVATE VILLA — WEDDING ESTIMATE REQUEST");
-  rows.push("Montego Bay, Jamaica");
+  rows.push(C.heading);
+  rows.push(C.location);
   rows.push("");
-  rows.push("YOUR ANSWERS");
-  rows.push("Check in: " + fmtDate(q.checkIn));
-  rows.push("Check out: " + fmtDate(q.checkOut));
-  rows.push("Nights: " + q.nights + "  (season: " + q.seasonLabel + ", " + q.seasonWindow +
-    "; minimum " + q.minNights + " nights" + (q.belowMinimum ? " — UNDER MINIMUM" : "") + ")");
-  rows.push("Overnight guests: " + q.stayers +
-    "  (adults " + q.counts.adults + ", teens 13-17 " + q.counts.teens +
-    ", children 5-12 " + q.counts.kids + ", under 5 " + q.counts.under5 + ")");
-  rows.push("Meal plan: " + q.mealPlanLabel +
-    (q.barIncluded ? " (drinks included)" : " (FOOD ONLY — bar billed at check-out)"));
-  rows.push("Event guests: " + q.eventGuests + " total (" + q.visitingGuests + " visiting)");
-  rows.push("Event days: " + q.eventDays);
-  rows.push("Service style: " + q.styleLabel);
+  rows.push(C.answersHeading);
+  rows.push(C.datesLabel + ": " + fmtDate(q.checkIn) + " to " + fmtDate(q.checkOut));
+  rows.push(t(C.minimumSuffix, {
+    nights: nightsWord(q.nights), season: q.seasonLabel, window: q.seasonWindow,
+    min: q.minNights, flag: q.belowMinimum ? C.underMinimumFlag : "" }));
+  rows.push(COPY.guests.title + ": " + q.stayers +
+    " (" + COPY.guests.adults + " " + q.counts.adults +
+    ", " + COPY.guests.teens + " " + q.counts.teens +
+    ", " + COPY.guests.kids + " " + q.counts.kids +
+    ", " + COPY.guests.under5 + " " + q.counts.under5 + ")");
+  rows.push(COPY.meal.title + ": " + q.mealPlanLabel +
+    (q.barIncluded ? "" : C.foodOnlyFlag));
+  rows.push(COPY.event.guestsLabel + ": " + q.eventGuests + " " +
+    t(C.visitingSuffix, { visitors: q.visitingGuests }));
+  rows.push(COPY.event.daysLabel + ": " + q.eventDays);
+  rows.push(COPY.event.styleLabel + ": " + q.styleLabel);
   rows.push(q.isCocktail
-    ? "Hors d'oeuvres: " + q.selections + " selections x 30 pieces (" + q.pieces +
-      " pieces, about " + q.piecesPerGuest + " per guest). Selections run $" +
-      q.selectionMin + "-$" + q.selectionMax + " each."
-    : "Menu: " + q.menuLabel + " at $" + q.menuPrice + " per person");
-  rows.push("Venue (auto-selected): " + q.venue + " — " + q.venueNote);
-  rows.push("Extras: " + (q.extrasDetail.length
+    ? t(C.cocktailLine, {
+        label: COPY.event.selectionsLabel, count: q.selections,
+        pieces: PRICES.eventStyles.cocktail.piecesPerSelection, total: q.pieces,
+        perGuest: q.piecesPerGuest, low: q.selectionMin, high: q.selectionMax })
+    : t(C.menuLine, {
+        label: COPY.event.menuLabel, menu: q.menuLabel, price: q.menuPrice }));
+  rows.push(t(C.venueLine, { venue: q.venue, note: q.venueNote }));
+  rows.push(COPY.extras.title + ": " + (q.extrasDetail.length
     ? q.extrasDetail.map(x => x.label + (x.units > 1 ? " x" + x.units : "")).join("; ")
-    : "none"));
+    : COPY.common.none));
   rows.push("");
-  rows.push("INCLUDED ON EVERY BOOKING, NO MEAL PLAN REQUIRED");
+  rows.push(C.includedHeading);
   q.alwaysIncluded.forEach(i => rows.push("  - " + i));
   rows.push("");
-  rows.push("BREAKDOWN (USD)");
-  rows.push("Accommodation ......... " + money2.format(q.accommodationPreDiscount) +
+  rows.push(C.breakdownHeading);
+
+  rows.push(pad(LN.accommodation, money2.format(q.accommodationPreDiscount)) +
     "   [" + q.seasonLabel + ", " + q.rateBasis +
     (q.accommodationOverflow > 0
-      ? ", incl. " + money2.format(q.accommodationOverflow) + " for guests over 20" : "") + "]");
+      ? t(C.overflowSuffix, {
+          amount: money2.format(q.accommodationOverflow),
+          included: PRICES.extraGuest.includedUpTo }) : "") + "]");
   if (q.discountApplies) {
-    rows.push("Direct booking disc ... -" + money2.format(q.accommodationDiscount) +
-      "   [" + Math.round(q.discountRate * 100) + "% off, stays of " + PRICES.weekFromNights +
-      "+ nights booked direct]");
-    rows.push("Accommodation net ..... " + money2.format(L.accommodation) +
-      "   [GCT and gratuity are both based on this]");
+    rows.push(pad(t(LN.discount, { percent: Math.round(q.discountRate * 100) }),
+      "-" + money2.format(q.accommodationDiscount)));
+    rows.push(pad(LN.accommodationNet, money2.format(L.accommodation)) +
+      "   [" + LN.accommodationNetSub + "]");
   }
-  rows.push("Meal plan ............. " + money2.format(L.mealPlan) +
-    "   [" + q.mealPlanLabel + ", " + q.stayers + " guests x " + q.nights + " nights]");
-  rows.push("Event fee ............. " + money2.format(L.eventFee) +
-    "   [" + (q.eventFeeWaived
-      ? (q.nights >= PRICES.weekFromNights ? "waived - 7+ nights" : "waived - six or fewer visitors")
-      : "one fee for a " + q.nights + "-night stay") + "]");
-  rows.push("Event food ............ " + money2.format(L.eventFood) +
-    "   [" + (q.isCocktail
-      ? q.selections + " selections x $" + q.selectionMin + " (lowest-priced) x " + q.eventDays + " day(s)"
-      : "$" + q.menuPrice + " x " + q.eventGuests + " guests x " + q.eventDays + " day(s)") + "]");
-  rows.push("Bar ................... " + (q.barIncluded ? "NOT ESTIMATED" : "NOT INCLUDED") +
+  rows.push(pad(LN.mealPlan, money2.format(L.mealPlan)) +
+    "   [" + q.mealPlanLabel + ", " + q.stayers + " x " + nightsWord(q.nights) + "]");
+  rows.push(pad(LN.eventFee, money2.format(L.eventFee)) + "   [" +
+    (q.eventFeeWaived
+      ? (q.nights >= PRICES.weekFromNights
+          ? t(LN.eventFeeWaivedLong, { nights: PRICES.weekFromNights })
+          : LN.eventFeeWaivedSize)
+      : t(LN.eventFeeCharged, { nights: nightsWord(q.nights) })) + "]");
+  rows.push(pad(LN.eventFood, money2.format(L.eventFood)) + "   [" +
+    (q.isCocktail
+      ? q.selections + " selections x $" + q.selectionMin + " x " + q.eventDays
+      : "$" + q.menuPrice + " x " + q.eventGuests + " x " + q.eventDays) + "]");
+  rows.push(pad(C.barLabel, q.barIncluded ? C.barNotEstimated : C.barNotIncluded) +
     "   [" + q.barDisclosure + "]");
   rows.push("    " + q.barNote);
   if (q.corkageNote) rows.push("    " + q.corkageNote);
-  rows.push("Event staff ........... " + money2.format(L.staff) +
-    "   [" + (q.staffPerDay > 0
-      ? q.staffRoster.map(r => r.qty + "x " + r.role).join(", ") + " at " +
-        money2.format(q.staffPerDay) + " per event day - representative, quoted per service plan"
-      : "not required") + "]");
-  rows.push("Extras ................ " + money2.format(L.extras));
+  rows.push(pad(LN.staff, money2.format(L.staff)) + "   [" +
+    (q.staffPerDay > 0
+      ? t(C.perEventDay, {
+          roster: q.staffRoster.map(r => r.qty + "x " + r.role).join(", "),
+          rate: money2.format(q.staffPerDay) })
+      : t(LN.staffNotNeeded, { guests: q.eventGuests })) + "]");
+  rows.push(pad(LN.extras, money2.format(L.extras)));
   q.extrasDetail.forEach(x => {
     rows.push("    - " + x.label + " (" + x.meta + ")" +
       (x.units > 1 ? " x" + x.units : "") + " = " + money2.format(x.amount));
   });
-  rows.push("GCT 10% ............... " + money2.format(q.gct) +
-    "   [accommodation after discount, meal plan, event fee, event food, extras]");
-
+  rows.push(pad(LN.gct, money2.format(q.gct)) + "   [" + LN.gctSub + "]");
   rows.push("");
-  rows.push("ESTIMATED TOTAL ....... " + money2.format(q.total));
-  rows.push("  Catering for all " + q.eventGuests + " event guests from the wedding menus.");
+  rows.push(pad(C.totalLabel, money2.format(q.total)));
+  rows.push(t(C.totalNote, { guests: q.eventGuests }));
   rows.push("");
-  rows.push("NOT INCLUDED IN THE TOTAL ABOVE");
-  rows.push("  Staff gratuity - paid in cash at check-out. Customary 20% of accommodation,");
-  rows.push("    approximately " + money2.format(q.gratuity) + " (" +
-    money2.format(q.gratuityOnCard) + " if paid by card at 23%).");
-  rows.push("  Refundable damage deposit: " + money2.format(q.deposit) +
-    " - held against the card on file, returned after check-out.");
-  rows.push("  The bar - billed on consumption, quoted by Silent Waters.");
-  if (!q.barIncluded) {
-    rows.push("!! This total EXCLUDES the bar bill. On the Gourmet plan every drink is");
-    rows.push("   purchased from Silent Waters' inventory and billed at check-out. It has");
-    rows.push("   deliberately not been estimated here.");
-  }
+  rows.push(C.notIncludedHeading);
+  rows.push(t(C.notIncludedGratuity, {
+    cash: money2.format(q.gratuity), card: money2.format(q.gratuityOnCard) }));
+  rows.push(t(C.notIncludedDeposit, { amount: money2.format(q.deposit) }));
+  rows.push(C.notIncludedBar);
 
   const lever = sevenNightLever(q.input);
   if (lever.applies) {
     rows.push("");
-    rows.push("NOTE: at " + PRICES.weekFromNights + " nights the " +
-      money2.format(lever.feeWaived) + " event fee is waived. Checking out " +
-      fmtDate(lever.checkOut) + " instead would make the total " +
-      money2.format(lever.extendedTotal) + " (" +
-      (lever.cheaper ? "-" : "+") + money2.format(Math.abs(lever.delta)) + ").");
+    rows.push(t(C.leverNote, {
+      week: PRICES.weekFromNights, fee: money2.format(lever.feeWaived),
+      date: fmtDate(lever.checkOut), total: money2.format(lever.extendedTotal),
+      sign: lever.cheaper ? "-" : "+", delta: money2.format(Math.abs(lever.delta)) }));
   }
-  rows.push("");
-  rows.push("Estimate only. Prices 2H 2026, subject to change.");
-  rows.push("Your final quote comes from Silent Waters.");
 
-  return rows.join(nl);
+  rows.push("");
+  rows.push(C.signOff);
+  return rows.join("\n");
 }
 
 function mailSubject(q) {
-  return "Wedding estimate request – " + fmtDate(q.checkIn) + " to " +
-    fmtDate(q.checkOut) + " – " + q.eventGuests + " guests";
+  return t(COPY.email.subject, {
+    start: fmtDate(q.checkIn), end: fmtDate(q.checkOut), guests: q.eventGuests });
 }
 
 function buildMailto(q) {
@@ -2748,10 +3106,10 @@ function wire() {
         document.execCommand("copy");
         document.body.removeChild(ta);
       }
-      toast("Estimate copied");
+      toast(COPY.estimate.copied);
     } catch (err) {
       console.error("Copy failed:", err);
-      toast("Could not copy — please select and copy manually");
+      toast(COPY.estimate.copyFailed);
     }
   });
 
@@ -2773,6 +3131,7 @@ function wire() {
 /* =================================================================
    Boot
    ================================================================= */
+paintStatic();
 buildProgress();
 buildCounters();
 buildMealChoices();
@@ -2793,6 +3152,11 @@ window.SW = {
   mergeRoster: mergeRoster,
   sevenNightLever: sevenNightLever,
   addNights: addNights,
+  COPY: COPY,
+  t: t,
+  reconcileStoredDates: reconcileStoredDates,
+  DATE_TTL_MS: DATE_TTL_MS,
+  LEGACY_SEEDED_DATES: LEGACY_SEEDED_DATES,
   pickerReduce: pickerReduce,
   pickerDayFlags: pickerDayFlags,
   pickerSummary: pickerSummary,
