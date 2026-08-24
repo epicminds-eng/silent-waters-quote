@@ -203,7 +203,7 @@ main{
   color: var(--ink-mute);
   margin-bottom: var(--s-xs);
 }
-input[type="date"], input[type="number"]{
+input[type="number"]{
   font-family: var(--font-ui);
   font-size: var(--fs-md);
   color: var(--ink);
@@ -215,13 +215,162 @@ input[type="date"], input[type="number"]{
   width: 100%;
   appearance: none;
 }
-input[type="date"]{ min-height: var(--tap); }
 input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible{
   outline: 2px solid var(--gold);
   outline-offset: var(--s-3xs);
 }
 .row{ display: flex; gap: var(--s-sm); }
 .row > .field{ flex: 1 1 50%; margin-bottom: var(--s-md); min-width: 0; }
+
+/* ---------------- date field + calendar ---------------- */
+.datefield{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-sm);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--s-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.datefield[aria-expanded="true"]{ border-color: var(--gold); }
+.datefield__value{ flex: 1 1 auto; min-width: 0; }
+.datefield--empty .datefield__value{ color: var(--ink-mute); }
+.datefield__nights{ color: var(--gold); }
+.datefield__icon{ flex: 0 0 auto; color: var(--gold); font-size: var(--fs-sm); }
+
+.cal{
+  margin-top: var(--s-sm);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--s-sm);
+}
+.cal[hidden]{ display: none; }
+.cal__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-sm);
+  margin-bottom: var(--s-xs);
+}
+.cal__nav{
+  flex: 0 0 auto;
+  width: var(--tap-sm);
+  height: var(--tap-sm);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--gold-wash);
+  color: var(--gold);
+  font-size: var(--fs-md);
+  line-height: 1;
+  cursor: pointer;
+}
+.cal__nav:disabled{ opacity: .3; cursor: not-allowed; }
+.cal__prompt{
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  min-width: 0;
+}
+.cal__prompt strong{ color: var(--gold); font-weight: 600; }
+
+.cal__months{ display: flex; gap: var(--s-md); }
+.cal__month{ flex: 1 1 100%; min-width: 0; }
+.cal__month--second{ display: none; }
+.cal__title{
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin: 0 0 var(--s-2xs);
+}
+.cal__grid{ display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal__dow{
+  text-align: center;
+  font-size: var(--fs-2xs);
+  color: var(--ink-mute);
+  padding: var(--s-2xs) 0;
+}
+.cal__cell{ position: relative; padding: var(--s-3xs); }
+.cal__day{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  cursor: pointer;
+}
+.cal__day:disabled{ color: var(--line); cursor: not-allowed; }
+.cal__day[data-today="1"]{ box-shadow: inset 0 0 0 1px var(--line); }
+.cal__cell[data-in-range="1"]{ background: var(--gold-wash); }
+.cal__cell[data-edge="start"]{ background: var(--gold-wash); border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.cal__cell[data-edge="end"]{ background: var(--gold-wash); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.cal__cell[data-edge="only"]{ background: transparent; }
+.cal__day[data-edge]{ background: var(--gold); color: #fff; font-weight: 600; }
+.cal__day[data-seventh="1"]::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: var(--s-2xs);
+  width: var(--s-2xs);
+  height: var(--s-2xs);
+  margin-left: calc(-1 * var(--s-3xs));
+  border-radius: var(--radius-pill);
+  background: var(--blue);
+}
+.cal__day[data-edge][data-seventh="1"]::after{ background: #fff; }
+.cal__foot{
+  margin: var(--s-xs) 0 0;
+  padding-top: var(--s-xs);
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-sm);
+  font-size: var(--fs-2xs);
+  color: var(--ink-mute);
+}
+.cal__legend{ display: flex; align-items: center; gap: var(--s-2xs); }
+.cal__legend::before{
+  content: "";
+  width: var(--s-2xs);
+  height: var(--s-2xs);
+  border-radius: var(--radius-pill);
+  background: var(--blue);
+}
+.cal__done{
+  border: 0;
+  background: none;
+  color: var(--gold);
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: var(--s-2xs) 0;
+}
+
+@media (min-width: 40rem){
+  .cal__month--second{ display: block; }
+}
 
 /* ---------------- callouts ---------------- */
 .note{
@@ -683,18 +832,17 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 1 — DATES -->
   <section class="step" id="step-0" aria-labelledby="t0">
-    <p class="step__eyebrow">Step 1 of 6</p>
+    <p class="step__eyebrow">Step 1 of 5</p>
     <h2 class="step__title" id="t0">Your dates</h2>
     <p class="step__lede">Tell us when you would like the estate, and we will work out the season and the nightly rate.</p>
-    <div class="row">
-      <div class="field">
-        <label class="field__label" for="checkIn">Check in</label>
-        <input type="date" id="checkIn" data-bind="checkIn">
-      </div>
-      <div class="field">
-        <label class="field__label" for="checkOut">Check out</label>
-        <input type="date" id="checkOut" data-bind="checkOut">
-      </div>
+    <div class="field">
+      <span class="field__label" id="dateFieldLabel">Your dates</span>
+      <button type="button" class="datefield" id="dateField"
+              aria-expanded="false" aria-labelledby="dateFieldLabel">
+        <span class="datefield__value" id="dateFieldValue">Select your dates</span>
+        <span class="datefield__icon" aria-hidden="true">▾</span>
+      </button>
+      <div class="cal" id="cal" hidden></div>
     </div>
     <p class="note note--brand" id="seasonNote" hidden></p>
     <p class="note note--warn" id="minNote" hidden></p>
@@ -703,7 +851,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 2 — GUESTS -->
   <section class="step" id="step-1" aria-labelledby="t1" hidden>
-    <p class="step__eyebrow">Step 2 of 6</p>
+    <p class="step__eyebrow">Step 2 of 5</p>
     <h2 class="step__title" id="t1">Who is staying</h2>
     <p class="step__lede">Overnight guests only — sleeping at the estate. Visiting event guests come next.</p>
     <div class="countgrid" id="countgrid"></div>
@@ -718,7 +866,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 3 — MEAL PLAN -->
   <section class="step" id="step-2" aria-labelledby="t2" hidden>
-    <p class="step__eyebrow">Step 3 of 6</p>
+    <p class="step__eyebrow">Step 3 of 5</p>
     <h2 class="step__title" id="t2">Meal plan</h2>
     <p class="step__lede">Chosen for the whole stay, for every overnight guest.</p>
     <div class="included" id="alwaysIncluded"></div>
@@ -729,7 +877,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 4 — EVENT -->
   <section class="step" id="step-3" aria-labelledby="t3" hidden>
-    <p class="step__eyebrow">Step 4 of 6</p>
+    <p class="step__eyebrow">Step 4 of 5</p>
     <h2 class="step__title" id="t3">The event</h2>
     <p class="step__lede">Your ceremony and reception — including the guests already staying with you.</p>
 
@@ -777,7 +925,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 5 — EXTRAS -->
   <section class="step" id="step-4" aria-labelledby="t4" hidden>
-    <p class="step__eyebrow">Step 5 of 6</p>
+    <p class="step__eyebrow">Step 5 of 5</p>
     <h2 class="step__title" id="t4">Extras</h2>
     <p class="step__lede">Optional additions. Everything here can be added or dropped later.</p>
     <div class="choices" id="extraChoices"></div>
@@ -785,7 +933,6 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <!-- STEP 6 — ESTIMATE -->
   <section class="step" id="step-5" aria-labelledby="t5" hidden>
-    <p class="step__eyebrow">Step 6 of 6</p>
     <h2 class="step__title" id="t5">Your estimate</h2>
     <p class="topline">Rough estimate only — your final quote comes from Silent Waters.</p>
     <p class="step__lede" id="estimateLede"></p>
@@ -1551,6 +1698,114 @@ function sevenNightLever(input) {
 }
 
 /* =================================================================
+   Date picker — pure model
+   -----------------------------------------------------------------
+   The native <input type="date"> pair let a check-out sit before a
+   check-in (it defaulted to today, so an October check-in showed an
+   August check-out). These functions replace it. They are pure: no DOM,
+   no clock beyond the `todayIso` you hand them, so the tests can drive
+   them directly.
+
+   The load-bearing guarantee is in pickerReduce: it can never return a
+   selection whose checkOut is on or before its checkIn. Every date that
+   reaches calcQuote comes through it.
+   ================================================================= */
+
+/** Today as yyyy-mm-dd, in local time. */
+function todayIso(now) {
+  const d = now || new Date();
+  const pad = n => (n < 10 ? "0" : "") + n;
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+}
+
+/** Minimum nights the season of `iso` demands. */
+function minNightsForDate(iso) {
+  const key = seasonFor(iso);
+  return key ? PRICES.seasons[key].minNights : 0;
+}
+
+/**
+ * The whole picker interaction, as one pure step.
+ * @param {{checkIn:string, checkOut:string}} sel current selection
+ * @param {string} dateIso the day that was tapped
+ * @returns {{checkIn:string, checkOut:string}} the next selection
+ */
+function pickerReduce(sel, dateIso) {
+  const inIso = (sel && sel.checkIn) || "";
+  const outIso = (sel && sel.checkOut) || "";
+
+  /* Nothing chosen yet, or a finished range: this tap starts a new one. */
+  if (!inIso || outIso) return { checkIn: dateIso, checkOut: "" };
+
+  /* Awaiting a check-out. A tap on or before the check-in restarts from
+     that day rather than producing a backwards range. */
+  if (dateIso <= inIso) return { checkIn: dateIso, checkOut: "" };
+
+  /* Below the season minimum — the cell is disabled in the UI, but guard
+     it here too so the model holds on its own. */
+  if (nightsBetween(inIso, dateIso) < minNightsForDate(inIso)) {
+    return { checkIn: inIso, checkOut: "" };
+  }
+
+  return { checkIn: inIso, checkOut: dateIso };
+}
+
+/** What one day cell should look like. Pure. */
+function pickerDayFlags(dateIso, sel, today) {
+  const inIso = (sel && sel.checkIn) || "";
+  const outIso = (sel && sel.checkOut) || "";
+  const awaitingOut = Boolean(inIso) && !outIso;
+  const isPast = dateIso < today;
+  const nights = inIso && dateIso > inIso ? nightsBetween(inIso, dateIso) : 0;
+  const belowMinimum = awaitingOut && dateIso > inIso &&
+    nights < minNightsForDate(inIso);
+
+  return {
+    disabled: isPast || belowMinimum,
+    isPast: isPast,
+    belowMinimum: belowMinimum,
+    isCheckIn: Boolean(inIso) && dateIso === inIso,
+    isCheckOut: Boolean(outIso) && dateIso === outIso,
+    inRange: Boolean(inIso && outIso) && dateIso > inIso && dateIso < outIso,
+    isToday: dateIso === today,
+    nights: nights,
+    /* The stay-length lever: from this night on, the event fee is waived. */
+    isSeventhNight: awaitingOut && nights === PRICES.weekFromNights
+  };
+}
+
+/** The days of a month as ISO strings, padded to whole weeks with "". */
+function monthGrid(year, monthIndex) {
+  const first = new Date(Date.UTC(year, monthIndex, 1));
+  const lead = first.getUTCDay();
+  const days = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push("");
+  const pad = n => (n < 10 ? "0" : "") + n;
+  for (let d = 1; d <= days; d++) {
+    cells.push(year + "-" + pad(monthIndex + 1) + "-" + pad(d));
+  }
+  while (cells.length % 7 !== 0) cells.push("");
+  return cells;
+}
+
+/** "Oct 20 – Oct 27 · 7 nights", or "" when incomplete. Pure. */
+function pickerSummary(sel) {
+  const inIso = (sel && sel.checkIn) || "";
+  const outIso = (sel && sel.checkOut) || "";
+  if (!inIso) return "";
+  const short = iso => {
+    const t = Date.parse(iso + "T12:00:00Z");
+    return new Date(t).toLocaleDateString("en-US",
+      { month: "short", day: "numeric", timeZone: "UTC" });
+  };
+  if (!outIso) return short(inIso) + " – select your check-out date";
+  const n = nightsBetween(inIso, outIso);
+  return short(inIso) + " – " + short(outIso) + " · " + n +
+    (n === 1 ? " night" : " nights");
+}
+
+/* =================================================================
    State
    ================================================================= */
 const DEFAULTS = {
@@ -1565,7 +1820,8 @@ const DEFAULTS = {
 };
 
 const STORAGE_KEY = "silent-waters-quote-v1";
-const STEP_COUNT = 6;
+const STEP_COUNT = 6;      /* screens, including the estimate */
+const INPUT_STEPS = 5;     /* the estimate sits outside the numbering */
 /* Standard sleeping capacity. The cap rises to 28 with eight or more
    children aged 5-12 — see PRICES.occupancy and maxStayersFor(). */
 const MAX_STAYERS = 24;
@@ -1577,6 +1833,9 @@ const COUNT_FIELDS = [
   { key: "kids",   label: "Children", hint: "5 – 12" },
   { key: "under5", label: "Under 5", hint: "dine free" }
 ];
+
+/* Ephemeral picker chrome — deliberately not persisted. */
+const ui = { calOpen: false, month: "", hover: "" };
 
 let state = loadState();
 
@@ -1591,6 +1850,13 @@ function loadState() {
   const next = Object.assign({}, DEFAULTS, stored || {});
   next.extras = Object.assign({}, DEFAULTS.extras, (stored && stored.extras) || {});
   next.step = clamp(toInt(next.step, 0), 0, STEP_COUNT - 1);
+
+  /* Migration. Earlier builds used two native date inputs, which allowed a
+     check-out on or before the check-in. Drop any such stored pair rather
+     than letting it reach the pricing engine. */
+  if (next.checkOut && (!next.checkIn || next.checkOut <= next.checkIn)) {
+    next.checkOut = "";
+  }
   return next;
 }
 
@@ -1651,7 +1917,7 @@ function esc(s) {
 function buildProgress() {
   const wrap = $("#progress");
   wrap.innerHTML = "";
-  for (let i = 0; i < STEP_COUNT; i++) {
+  for (let i = 0; i < INPUT_STEPS; i++) {
     wrap.appendChild(el("span", { class: "progress__dot", "data-i": String(i) }));
   }
 }
@@ -1747,8 +2013,8 @@ function render() {
   const q = calcQuote(state);
 
   /* steps + progress */
-  for (let i = 0; i < STEP_COUNT; i++) {
-    show($("#step-" + i), i === state.step);
+  for (let i = 0; i < STEP_COUNT; i++) show($("#step-" + i), i === state.step);
+  for (let i = 0; i < INPUT_STEPS; i++) {
     const dot = $('.progress__dot[data-i="' + i + '"]');
     dot.setAttribute("data-state",
       i === state.step ? "current" : (i < state.step ? "done" : "todo"));
@@ -1758,7 +2024,7 @@ function render() {
   $("#backBtn").disabled = state.step === 0;
   const onLast = state.step === STEP_COUNT - 1;
   show($("#navbar"), !onLast);
-  $("#nextBtn").textContent = state.step === STEP_COUNT - 2 ? "See estimate" : "Next";
+  $("#nextBtn").textContent = state.step === INPUT_STEPS - 1 ? "See estimate" : "Next";
   $("#nextBtn").disabled = !canAdvance(q);
 
   renderDates(q);
@@ -1776,10 +2042,107 @@ function canAdvance(q) {
   return true;
 }
 
+const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+
+function monthLabel(year, monthIndex) {
+  return new Date(Date.UTC(year, monthIndex, 1))
+    .toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+}
+
+function renderCalendar() {
+  const cal = $("#cal");
+  show(cal, ui.calOpen);
+  $("#dateField").setAttribute("aria-expanded", ui.calOpen ? "true" : "false");
+  if (!ui.calOpen) return;
+
+  const today = todayIso();
+  const sel = { checkIn: state.checkIn, checkOut: state.checkOut };
+  const awaitingOut = Boolean(sel.checkIn) && !sel.checkOut;
+
+  /* While picking a check-out, a hovered day previews the range. */
+  const preview = awaitingOut && ui.hover && ui.hover > sel.checkIn &&
+    !pickerDayFlags(ui.hover, sel, today).disabled
+      ? { checkIn: sel.checkIn, checkOut: ui.hover }
+      : null;
+  const shown = preview || sel;
+
+  const anchor = ui.month.split("-").map(Number);
+  const baseY = anchor[0], baseM = anchor[1] - 1;
+
+  let prompt;
+  if (!sel.checkIn) {
+    prompt = "Select your check-in date";
+  } else if (awaitingOut) {
+    const n = preview ? nightsBetween(sel.checkIn, preview.checkOut) : 0;
+    prompt = n > 0
+      ? "<strong>" + n + (n === 1 ? " night" : " nights") + "</strong> — tap to confirm"
+      : "Select your check-out date";
+  } else {
+    prompt = esc(pickerSummary(sel));
+  }
+
+  const firstOfThisMonth = todayIso().slice(0, 7) + "-01";
+  const atStart = ui.month <= firstOfThisMonth;
+
+  let html =
+    '<div class="cal__head">' +
+      '<button type="button" class="cal__nav" data-cal-nav="-1" aria-label="Previous month"' +
+        (atStart ? " disabled" : "") + '>‹</button>' +
+      '<span class="cal__prompt">' + prompt + '</span>' +
+      '<button type="button" class="cal__nav" data-cal-nav="1" aria-label="Next month">›</button>' +
+    '</div><div class="cal__months">';
+
+  for (let m = 0; m < 2; m++) {
+    const d = new Date(Date.UTC(baseY, baseM + m, 1));
+    const y = d.getUTCFullYear(), mi = d.getUTCMonth();
+    html += '<div class="cal__month' + (m === 1 ? " cal__month--second" : "") + '">' +
+      '<p class="cal__title">' + esc(monthLabel(y, mi)) + '</p>' +
+      '<div class="cal__grid">' +
+      DOW.map(x => '<span class="cal__dow">' + x + '</span>').join("");
+
+    monthGrid(y, mi).forEach(iso => {
+      if (!iso) { html += '<span class="cal__cell"></span>'; return; }
+      const f = pickerDayFlags(iso, sel, today);
+      const p = pickerDayFlags(iso, shown, today);
+      const isStart = shown.checkIn === iso;
+      const isEnd = shown.checkOut === iso;
+      const edge = isStart && isEnd ? "only" : isStart ? "start" : isEnd ? "end" : "";
+      const between = Boolean(shown.checkIn && shown.checkOut) &&
+        iso > shown.checkIn && iso < shown.checkOut;
+
+      html += '<span class="cal__cell"' +
+        (between ? ' data-in-range="1"' : "") +
+        (edge && shown.checkOut ? ' data-edge="' + edge + '"' : "") + '>' +
+        '<button type="button" class="cal__day" data-cal-day="' + iso + '"' +
+          (f.disabled ? " disabled" : "") +
+          (f.isToday ? ' data-today="1"' : "") +
+          (edge ? ' data-edge="' + edge + '"' : "") +
+          (f.isSeventhNight ? ' data-seventh="1"' : "") +
+          ' aria-label="' + esc(fmtDate(iso)) + '">' +
+          Number(iso.slice(8)) +
+        '</button></span>';
+    });
+    html += '</div></div>';
+  }
+
+  html += '</div><p class="cal__foot">' +
+    (awaitingOut
+      ? '<span class="cal__legend">Event fee waived from here</span>'
+      : '<span></span>') +
+    '<button type="button" class="cal__done" data-cal-close="1">Done</button></p>';
+
+  cal.innerHTML = html;
+}
+
 function renderDates(q) {
-  $("#checkIn").value = state.checkIn || "";
-  $("#checkOut").value = state.checkOut || "";
-  $("#checkOut").min = state.checkIn || "";
+  const field = $("#dateField");
+  const summary = pickerSummary({ checkIn: state.checkIn, checkOut: state.checkOut });
+  field.classList.toggle("datefield--empty", !summary);
+  $("#dateFieldValue").innerHTML = summary
+    ? esc(summary).replace(/·\s([0-9]+\s+nights?)/,
+        '· <span class="datefield__nights">$1</span>')
+    : "Select your dates";
+  renderCalendar();
 
   const seasonNote = $("#seasonNote");
   if (q.seasonKey && q.nights > 0) {
@@ -2240,19 +2603,83 @@ function goTo(step) {
 
 function wire() {
   $("#backBtn").addEventListener("click", () => goTo(state.step - 1));
+
+  /* ---- date picker ---- */
+  $("#dateField").addEventListener("click", () => {
+    ui.calOpen = !ui.calOpen;
+    if (ui.calOpen) {
+      ui.month = (state.checkIn || todayIso()).slice(0, 7) + "-01";
+      ui.hover = "";
+    }
+    render();
+  });
+
+  $("#cal").addEventListener("click", ev => {
+    const nav = ev.target.closest("[data-cal-nav]");
+    if (nav) {
+      const step = Number(nav.getAttribute("data-cal-nav"));
+      const a = ui.month.split("-").map(Number);
+      const d = new Date(Date.UTC(a[0], a[1] - 1 + step, 1));
+      ui.month = d.toISOString().slice(0, 8) + "01";
+      renderCalendar();
+      return;
+    }
+    if (ev.target.closest("[data-cal-close]")) {
+      ui.calOpen = false;
+      render();
+      return;
+    }
+    const day = ev.target.closest("[data-cal-day]");
+    if (!day || day.disabled) return;
+
+    const next = pickerReduce(
+      { checkIn: state.checkIn, checkOut: state.checkOut },
+      day.getAttribute("data-cal-day"));
+    ui.hover = "";
+    /* Close once a whole range is in hand. */
+    if (next.checkIn && next.checkOut) ui.calOpen = false;
+    setState({ checkIn: next.checkIn, checkOut: next.checkOut });
+  });
+
+  /* Hover preview, where a pointer exists. Touch simply never fires this. */
+  $("#cal").addEventListener("mouseover", ev => {
+    const day = ev.target.closest("[data-cal-day]");
+    if (!day || day.disabled) return;
+    const iso = day.getAttribute("data-cal-day");
+    if (iso === ui.hover) return;
+    ui.hover = iso;
+    if (state.checkIn && !state.checkOut) renderCalendar();
+  });
+  $("#cal").addEventListener("mouseleave", () => {
+    if (!ui.hover) return;
+    ui.hover = "";
+    if (state.checkIn && !state.checkOut) renderCalendar();
+  });
+
+  /* A tap anywhere else closes it.
+
+     Registered on the CAPTURE phase deliberately. The month arrows and the
+     day cells rebuild the calendar's innerHTML, which detaches the very
+     node that was clicked; by the time a bubble-phase listener ran,
+     ev.target.closest("#cal") would be null on a detached node and this
+     would close the picker on every arrow tap. In capture we run before
+     any of that, while the target is still in the tree. */
+  document.addEventListener("click", ev => {
+    if (!ui.calOpen) return;
+    const t = ev.target;
+    if (t.closest && (t.closest("#cal") || t.closest("#dateField"))) return;
+    ui.calOpen = false;
+    render();
+  }, true);
   $("#nextBtn").addEventListener("click", () => goTo(state.step + 1));
 
-  /* date + free-number inputs */
+  /* Free-number inputs. Dates never come through here — they only ever
+     come from pickerReduce, which cannot produce a backwards range. */
   document.addEventListener("input", ev => {
     const bind = ev.target.getAttribute && ev.target.getAttribute("data-bind");
     if (!bind) return;
-    const value = ev.target.value;
     const patch = {};
-    patch[bind] = value;
-    /* keep check-out after check-in */
-    if (bind === "checkIn" && state.checkOut && state.checkOut <= value) {
-      patch.checkOut = "";
-    }
+    patch[bind] = ev.target.value;
     setState(patch);
   });
 
@@ -2336,6 +2763,7 @@ function wire() {
     try { window.localStorage.removeItem(STORAGE_KEY); }
     catch (err) { console.warn("Could not clear saved answers:", err); }
     state = Object.assign({}, DEFAULTS, { extras: Object.assign({}, DEFAULTS.extras) });
+    ui.calOpen = false; ui.hover = ""; ui.month = "";
     saveState();
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2365,6 +2793,12 @@ window.SW = {
   mergeRoster: mergeRoster,
   sevenNightLever: sevenNightLever,
   addNights: addNights,
+  pickerReduce: pickerReduce,
+  pickerDayFlags: pickerDayFlags,
+  pickerSummary: pickerSummary,
+  monthGrid: monthGrid,
+  minNightsForDate: minNightsForDate,
+  todayIso: todayIso,
   estimateText: estimateText,
   mailSubject: mailSubject
 };
