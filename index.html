@@ -604,6 +604,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
 .btn--ghost{ background: transparent; color: var(--ink-soft); border-color: var(--line); }
 .btn:disabled{ opacity: .4; cursor: not-allowed; }
 .actions{ display: flex; flex-direction: column; gap: var(--s-sm); margin-top: var(--s-lg); }
+.btn--wide{ margin-top: var(--s-sm); }
 .startover{
   display: block;
   text-align: center;
@@ -709,10 +710,11 @@ details.breakdown[open] > summary::after{ content: "–"; }
     <div class="countgrid" id="countgrid"></div>
     <div class="tally">
       <span class="tally__l">Staying overnight</span>
-      <span class="tally__n"><span id="stayerTotal">2</span> <span class="tally__l">of 24</span></span>
+      <span class="tally__n"><span id="stayerTotal">2</span> <span class="tally__l">of <span id="stayerCap">24</span></span></span>
     </div>
     <p class="note note--warn" id="stayerNote" hidden></p>
-    <p class="note note--info">The estate rate includes up to 20 guests. Guests 21–24 are charged per night as an additional guest.</p>
+    <p class="note note--brand" id="capNote" hidden></p>
+    <p class="note note--info">The estate rate includes up to 20 guests. Everyone past 20 is charged per night as an additional guest.</p>
   </section>
 
   <!-- STEP 3 — MEAL PLAN -->
@@ -810,6 +812,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
       <a class="btn btn--gold" id="mailtoBtn" href="#">Send this estimate to Silent Waters</a>
       <button class="btn btn--ghost" id="copyBtn" type="button">Copy estimate</button>
     </div>
+    <button class="btn btn--ghost btn--wide" id="estimateBack" type="button">Back — change my answers</button>
 
     <p class="disclaimer">Estimate only. Prices 2H 2026, subject to change. Your final quote comes from Silent Waters.</p>
     <button class="startover" id="startOver" type="button">Start over</button>
@@ -1053,17 +1056,13 @@ const PRICES = {
      person per event day that used to sit here was invented and has been
      removed. The bar is disclosed as a line with no amount instead. */
 
-  /* Visitor and event-day catering, used for the HIGH end of the range.
-     Source: Statement p.4 — the per-person all-inclusive rate charged to
-     event attendees on a wedding day.
-     Information Pack p.20 gives the standing visitor day rates by age for
-     comparison (All-Inclusive 217 adult / 169 teen / 99 child; Gourmet is
-     per meal, 30 breakfast / 44 lunch / 79 dinner, each +10% GCT). */
-  eventDayAllInclusive: 249,
-  visitorDayRates: {
-    ai:      { adults: 217, teens: 169, kids: 99, under5: 0 },
-    gourmet: { breakfast: 30, lunch: 44, dinner: 79 }
-  },
+  /* The event day is catered a la carte from the wedding menus for EVERY
+     attendee, staying and visiting alike.
+     London, 2026-08-23: "as we have always done in the past" — nobody buys
+     the event-day all-inclusive, so the estimate is a single number rather
+     than a range. The previous high end, built on the per-person
+     event-day all-inclusive rate in Statement p.4, has been removed.
+     Answers docs/QUESTIONS_FOR_LONDON.md item 8. */
 
   /* Extra event staffing, charged per event day once the guest count
      passes `threshold`. Rates are verbatim from Statement p.2. */
@@ -1155,8 +1154,22 @@ const PRICES = {
   gratuity: 0.20,
   gratuityOnCard: 0.23,
 
-  /* Information Pack p.14 and Statement p.1. Refundable, shown separately. */
-  damageDeposit: 2000
+  /* Refundable, shown separately, never inside the total.
+     Source: London, 2026-08-23 — raised from the 2,000 printed in
+     Information Pack p.14. */
+  damageDeposit: 3000,
+
+  /* Occupancy. The estate sleeps 24 as standard (Wedding pack p.13:
+     "Additional guests over 20 can be accommodated with a limit of 24").
+     London, 2026-08-23: "many 5-12 have doubled up in the queen sofa beds,
+     plus two extra cots" — so a party with eight or more children aged
+     5-12 can go to 28. The over-20 surcharge still applies to everyone
+     past 20, whatever the cap. */
+  occupancy: {
+    standardMax: 24,
+    extendedMax: 28,
+    extendedWhenKidsAtLeast: 8
+  }
 };
 
 /* =================================================================
@@ -1206,6 +1219,16 @@ function tierIndexFor(seasonKey, stayers) {
     if (stayers <= breaks[i]) return i;
   }
   return breaks.length - 1;
+}
+
+/**
+ * How many guests may sleep at the estate.
+ * 24 as standard; 28 once eight or more of the party are children aged
+ * 5-12, who double up in the queen sofa beds (London, 2026-08-23).
+ */
+function maxStayersFor(kids) {
+  const o = PRICES.occupancy;
+  return kids >= o.extendedWhenKidsAtLeast ? o.extendedMax : o.standardMax;
 }
 
 /** Venue chosen automatically from the event guest count. */
@@ -1331,19 +1354,16 @@ function calcQuote(input) {
   const eventFeeWaived = nights === 0 ? true : (waivedByStay || waivedBySize);
   const eventFee = eventFeeWaived ? 0 : r2(feeBase);
 
-  /* ---- event food, two sourced ends --------------------------------
-     LOW  — catering from the wedding menus (Menu Options pack p.1-3).
-     HIGH — every event guest on the all-inclusive event-day plan, at the
-            per-person rate Silent Waters bills on a wedding day
-            (Statement p.4). This replaces the invented 15% uplift that used
-            to generate the high end. */
-  const eventFoodLow = isCocktail
+  /* ---- event food --------------------------------------------------
+     Catered a la carte from the wedding menus (Menu Options pack p.1-3)
+     for every attendee, staying and visiting alike. One number, not a
+     range — London, 2026-08-23. */
+  const eventFood = isCocktail
     ? r2(selections * selMin * eventDays)
     : r2(menuPrice * eventGuests * eventDays);
   const eventFoodCocktailHigh = isCocktail
     ? r2(selections * selMax * eventDays)
     : 0;
-  const eventFoodHigh = r2(PRICES.eventDayAllInclusive * eventGuests * eventDays);
 
   /* ---- bar --------------------------------------------------------
      R2: on Gourmet the bar is NOT estimated. Drinks are bought from the
@@ -1393,21 +1413,19 @@ function calcQuote(input) {
      event food, extras AND the event fee (Info p.20 #4: "plus a 10% GCT").
      Gratuity is 20% of the POST-discount, pre-tax accommodation, per
      Statement p.1. */
-  const taxableCommon = accommodation + mealPlan + eventFee + extras;
-  const gctLow  = r2((taxableCommon + eventFoodLow) * PRICES.gct);
-  const gctHigh = r2((taxableCommon + eventFoodHigh) * PRICES.gct);
+  const gct = r2((accommodation + mealPlan + eventFee + extras + eventFood) * PRICES.gct);
 
+  /* Gratuity is NOT collected up front and is NOT part of the total.
+     London, 2026-08-23: it is paid in cash at check-out. We illustrate the
+     customary amount so nobody is surprised by it, the same way the
+     refundable deposit is shown. */
   const gratuity = r2(accommodation * PRICES.gratuity);
   const gratuityOnCard = r2(accommodation * PRICES.gratuityOnCard);
   const deposit = PRICES.damageDeposit;
 
-  const common = accommodation + mealPlan + eventFee + staff + extras + gratuity;
-  const totalLow  = r2(common + eventFoodLow  + gctLow);
-  const totalHigh = r2(common + eventFoodHigh + gctHigh);
-
-  /* The itemised breakdown shows the low end. */
-  const gct = gctLow;
-  const eventFood = eventFoodLow;
+  const total = r2(
+    accommodation + mealPlan + eventFee + eventFood + staff + extras + gct
+  );
 
   const venue = venueFor(eventGuests);
   const platedOverCap = styleKey === "plated" && eventGuests > style.cap;
@@ -1425,6 +1443,9 @@ function calcQuote(input) {
     belowMinimum: belowMin,
     stayers: stayers,
     counts: { adults: adults, teens: teens, kids: kids, under5: under5 },
+    maxStayers: maxStayersFor(kids),
+    occupancyExtended: kids >= PRICES.occupancy.extendedWhenKidsAtLeast,
+    overCapacity: stayers > maxStayersFor(kids),
     eventGuests: eventGuests,
     eventDays: eventDays,
     visitingGuests: visitingGuests,
@@ -1469,13 +1490,7 @@ function calcQuote(input) {
     discountRate: PRICES.directBookingDiscount.rate,
     accommodationOverflow: r2(overflowCost),
 
-    /* the two sourced ends of the range */
-    eventFoodLow: eventFoodLow,
-    eventFoodHigh: eventFoodHigh,
     eventFoodCocktailHigh: eventFoodCocktailHigh,
-    eventDayAllInclusive: PRICES.eventDayAllInclusive,
-    gctLow: gctLow,
-    gctHigh: gctHigh,
 
     /* cocktail specifics */
     isCocktail: isCocktail,
@@ -1491,7 +1506,7 @@ function calcQuote(input) {
     withGct: {
       accommodation: r2(accommodation * (1 + PRICES.gct)),
       mealPlan: r2(mealPlan * (1 + PRICES.gct)),
-      eventFood: r2(eventFoodLow * (1 + PRICES.gct)),
+      eventFood: r2(eventFood * (1 + PRICES.gct)),
       eventFee: r2(eventFee * (1 + PRICES.gct)),
       extras: r2(extras * (1 + PRICES.gct))
     },
@@ -1499,9 +1514,9 @@ function calcQuote(input) {
     gct: gct,
     gratuity: gratuity,
     gratuityOnCard: gratuityOnCard,
+    gratuityInTotal: false,
     deposit: deposit,
-    totalLow: totalLow,
-    totalHigh: totalHigh
+    total: total
   };
 }
 
@@ -1521,7 +1536,7 @@ function sevenNightLever(input) {
   if (!checkOut) return { applies: false };
 
   const extended = calcQuote(Object.assign({}, input, { checkOut: checkOut }));
-  const delta = r2(extended.totalLow - now.totalLow);
+  const delta = r2(extended.total - now.total);
 
   return {
     applies: true,
@@ -1529,8 +1544,8 @@ function sevenNightLever(input) {
     extraNights: PRICES.weekFromNights - now.nights,
     checkOut: checkOut,
     feeWaived: now.lines.eventFee,
-    currentTotal: now.totalLow,
-    extendedTotal: extended.totalLow,
+    currentTotal: now.total,
+    extendedTotal: extended.total,
     delta: delta,
     cheaper: delta < 0
   };
@@ -1552,7 +1567,10 @@ const DEFAULTS = {
 
 const STORAGE_KEY = "silent-waters-quote-v1";
 const STEP_COUNT = 6;
+/* Standard sleeping capacity. The cap rises to 28 with eight or more
+   children aged 5-12 — see PRICES.occupancy and maxStayersFor(). */
 const MAX_STAYERS = 24;
+const MAX_STAYERS_ANY = 28;
 
 const COUNT_FIELDS = [
   { key: "adults", label: "Adults",  hint: "18 and over" },
@@ -1647,7 +1665,7 @@ function buildCounters() {
     box.innerHTML =
       '<span class="count__label">' + esc(f.label) +
       ' <span class="count__hint">' + esc(f.hint) + '</span></span>' +
-      '<div class="stepper" data-stepper="' + f.key + '" data-min="0" data-max="' + MAX_STAYERS + '" data-step="1">' +
+      '<div class="stepper" data-stepper="' + f.key + '" data-min="0" data-max="' + MAX_STAYERS_ANY + '" data-step="1">' +
         '<button class="stepper__btn" type="button" data-delta="-1" aria-label="Fewer ' + esc(f.label) + '">&ndash;</button>' +
         '<input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="' + esc(f.label) + '">' +
         '<button class="stepper__btn" type="button" data-delta="1" aria-label="More ' + esc(f.label) + '">+</button>' +
@@ -1755,7 +1773,7 @@ function render() {
 
 function canAdvance(q) {
   if (state.step === 0) return q.nights > 0;
-  if (state.step === 1) return q.stayers > 0 && q.stayers <= MAX_STAYERS;
+  if (state.step === 1) return q.stayers > 0 && !q.overCapacity;
   return true;
 }
 
@@ -1796,16 +1814,30 @@ function renderGuests(q) {
     if (input && document.activeElement !== input) input.value = state[f.key];
   });
   $("#stayerTotal").textContent = String(q.stayers);
+  $("#stayerCap").textContent = String(q.maxStayers);
+
   const note = $("#stayerNote");
+  const capNote = $("#capNote");
   if (q.stayers === 0) {
     note.innerHTML = "<span>Add at least one overnight guest to continue.</span>";
     show(note, true);
-  } else if (q.stayers > MAX_STAYERS) {
-    note.innerHTML = "<span>The estate sleeps " + MAX_STAYERS +
+  } else if (q.overCapacity) {
+    note.innerHTML = "<span>The estate sleeps " + q.maxStayers +
+      (q.occupancyExtended ? " with a party this size" : "") +
       ". Please write to us about anything larger.</span>";
     show(note, true);
   } else {
     show(note, false);
+  }
+
+  /* Say why the cap moved, rather than letting it change silently. */
+  if (q.occupancyExtended) {
+    capNote.innerHTML = "<span>With " + q.counts.kids +
+      " children aged 5–12 we can sleep up to " + PRICES.occupancy.extendedMax +
+      " — they double up in the queen sofa beds, plus two extra cots.</span>";
+    show(capNote, true);
+  } else {
+    show(capNote, false);
   }
   syncStepperButtons();
 }
@@ -1990,19 +2022,17 @@ function breakdownRows(q) {
     "On accommodation after discount, meal plan, event fee, event food and extras",
     money2.format(q.gct)));
 
-  rows.push(lineRow("Staff gratuity (20%)",
-    "Of pre-tax accommodation after discount · mandatory for events",
-    money2.format(q.gratuity)));
+  rows.push(lineRow("Estimated total", "Everything above",
+    money2.format(q.total), "line--total"));
 
-  rows.push(lineRow("Estimated total", "Low end — catering from the wedding menus",
-    money2.format(q.totalLow), "line--total"));
-
-  rows.push(lineRow("High end", "If your event guests join the all-inclusive plan for the event day at $" +
-    q.eventDayAllInclusive + " per person",
-    money2.format(q.totalHigh), "line--total"));
+  /* Neither of these is collected up front, so neither is in the total. */
+  rows.push(lineRow("Staff gratuity — paid in cash at check-out",
+    "Customary 20% of accommodation, approximately " + money2.format(q.gratuity) +
+      " · " + money2.format(q.gratuityOnCard) + " if paid by card at 23% · not in the total",
+    "≈ " + money2.format(q.gratuity), "line--muted"));
 
   rows.push(lineRow("Refundable damage deposit",
-    "Held separately — not part of the total above",
+    "Held against the card on file and returned after check-out · not in the total",
     money2.format(q.deposit), "line--muted"));
 
   return rows.join("");
@@ -2013,13 +2043,12 @@ function renderEstimate(q) {
     fmtDate(state.checkIn) + " – " + fmtDate(state.checkOut) + " · " + q.stayers +
     " staying · " + q.eventGuests + " at the event.";
 
-  $("#rangeOut").innerHTML = money.format(q.totalLow) +
-    ' <span class="headline__dash">–</span> ' + money.format(q.totalHigh);
+  $("#rangeOut").innerHTML = money.format(q.total);
 
   $("#rangeCaption").innerHTML =
-    "Low end: catering from the wedding menus. High end: every event guest on the " +
-    "all-inclusive plan for the event day at $" + q.eventDayAllInclusive +
-    " per person, the rate Silent Waters billed on a recent wedding. The bar is not in either figure.";
+    "Catering for all " + q.eventGuests + " event guests from the wedding menus. " +
+    "The bar, the staff gratuity and the refundable deposit are not included — each is " +
+    "listed separately below.";
 
   $("#rangeMeta").innerHTML =
     "<span>" + esc(q.seasonLabel) + "</span>" +
@@ -2036,8 +2065,8 @@ function renderEstimate(q) {
   if (q.platedOverCap) {
     warnings.push("Plated service is capped at " + PRICES.eventStyles.plated.cap + " guests.");
   }
-  if (q.stayers > MAX_STAYERS) {
-    warnings.push("The estate sleeps " + MAX_STAYERS + " overnight.");
+  if (q.overCapacity) {
+    warnings.push("The estate sleeps " + q.maxStayers + " overnight.");
   }
   if (warnings.length) {
     warn.innerHTML = "<span>" + warnings.map(esc).join(" ") + " Do mention it when you write.</span>";
@@ -2054,8 +2083,9 @@ function renderEstimate(q) {
     "Included in the nightly rate on every booking: " +
       q.alwaysIncluded.join(", ").toLowerCase() + ".",
     "Venue: " + q.venue + " — " + q.venueNote,
-    "Paying the staff gratuity by card comes to " + money2.format(q.gratuityOnCard) +
-      " (23% of pre-tax accommodation).",
+    "The staff gratuity is paid in cash at check-out, not collected in advance. The customary " +
+      "amount is 20% of accommodation (" + money2.format(q.gratuity) + "), or 23% by card (" +
+      money2.format(q.gratuityOnCard) + ").",
     q.barDisclosure + ". Beverages are billed by the bottle and case from the à la carte menu, " +
       "on actual consumption. " + (q.corkageNote || ""),
     "Venue source: " + (q.venueSource || "Silent Waters"),
@@ -2147,21 +2177,24 @@ function estimateText(q) {
   });
   rows.push("GCT 10% ............... " + money2.format(q.gct) +
     "   [accommodation after discount, meal plan, event fee, event food, extras]");
-  rows.push("Staff gratuity 20% .... " + money2.format(q.gratuity) +
-    "   [of pre-tax accommodation AFTER discount; " + money2.format(q.gratuityOnCard) +
-    " if paid by card at 23%]");
+
   rows.push("");
-  rows.push("ESTIMATED TOTAL ....... " + money2.format(q.totalLow) + " - " + money2.format(q.totalHigh));
-  rows.push("  Low end: catering from the wedding menus.");
-  rows.push("  High end: every event guest on the all-inclusive plan for the event day at $" +
-    q.eventDayAllInclusive + " p/person.");
-  rows.push("  The bar is in neither figure.");
+  rows.push("ESTIMATED TOTAL ....... " + money2.format(q.total));
+  rows.push("  Catering for all " + q.eventGuests + " event guests from the wedding menus.");
+  rows.push("");
+  rows.push("NOT INCLUDED IN THE TOTAL ABOVE");
+  rows.push("  Staff gratuity - paid in cash at check-out. Customary 20% of accommodation,");
+  rows.push("    approximately " + money2.format(q.gratuity) + " (" +
+    money2.format(q.gratuityOnCard) + " if paid by card at 23%).");
+  rows.push("  Refundable damage deposit: " + money2.format(q.deposit) +
+    " - held against the card on file, returned after check-out.");
+  rows.push("  The bar - billed on consumption, quoted by Silent Waters.");
   if (!q.barIncluded) {
     rows.push("!! This total EXCLUDES the bar bill. On the Gourmet plan every drink is");
     rows.push("   purchased from Silent Waters' inventory and billed at check-out. It has");
     rows.push("   deliberately not been estimated here.");
   }
-  rows.push("Refundable damage deposit (separate, not in the total): " + money2.format(q.deposit));
+
   const lever = sevenNightLever(q.input);
   if (lever.applies) {
     rows.push("");
@@ -2295,6 +2328,10 @@ function wire() {
       toast("Could not copy — please select and copy manually");
     }
   });
+
+  /* Navigation only — localStorage already holds every answer, so stepping
+     back simply re-renders the previous screen with them intact. */
+  $("#estimateBack").addEventListener("click", () => goTo(state.step - 1));
 
   $("#startOver").addEventListener("click", () => {
     try { window.localStorage.removeItem(STORAGE_KEY); }
