@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>London Walkthrough — Silent Waters</title>
+<style>
+  :root{
+    --ink:#1C2B4A; --gold:#827230; --bg:#FAF9F6; --card:#FFFFFF;
+    --line:#E5E1D8; --muted:#6B7280; --wash:#F1EEE5;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif; line-height:1.5; padding:1.25rem;
+    max-width:52rem; margin:0 auto;}
+  header{text-align:center; margin:1rem 0 2rem;}
+  header h1{font-size:1.6rem; letter-spacing:.02em;}
+  header p{color:var(--muted); font-size:.95rem; margin-top:.4rem;
+    font-family:-apple-system,Helvetica,Arial,sans-serif;}
+  h2{font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:.8rem;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--gold);
+    border-bottom:1px solid var(--line); padding-bottom:.4rem; margin:2.2rem 0 1rem;}
+  .q{background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:1rem 1.1rem; margin-bottom:.9rem;}
+  .q h3{font-size:1.02rem; margin-bottom:.3rem;}
+  .q .ctx{font-size:.9rem; color:var(--muted); margin-bottom:.35rem;
+    font-family:-apple-system,Helvetica,Arial,sans-serif;}
+  .q .cur{font-size:.85rem; font-style:italic; color:var(--gold); margin-bottom:.6rem;
+    font-family:-apple-system,Helvetica,Arial,sans-serif;}
+  .chips{display:flex; flex-wrap:wrap; gap:.45rem; margin-bottom:.55rem;}
+  .chip{font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:.85rem;
+    border:1px solid var(--line); background:var(--wash); border-radius:999px;
+    padding:.42rem .85rem; cursor:pointer; user-select:none;}
+  .chip.on{background:var(--gold); border-color:var(--gold); color:#fff;}
+  textarea, input[type=text]{width:100%; border:1px solid var(--line); border-radius:8px;
+    padding:.6rem .7rem; font-family:-apple-system,Helvetica,Arial,sans-serif;
+    font-size:16px; background:#FFFDF9; color:var(--ink);}
+  textarea{min-height:2.6rem; resize:vertical;}
+  textarea:focus, input:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .out{position:sticky; bottom:0; background:var(--bg); padding:1rem 0 .5rem;
+    border-top:2px solid var(--gold); margin-top:2rem;}
+  .out button{width:100%; font-family:-apple-system,Helvetica,Arial,sans-serif;
+    font-size:1rem; font-weight:600; letter-spacing:.05em; color:#fff;
+    background:var(--ink); border:0; border-radius:10px; padding:.9rem; cursor:pointer;}
+  .out button.copied{background:var(--gold);}
+  .out .hint{text-align:center; font-size:.8rem; color:var(--muted); margin-top:.4rem;
+    font-family:-apple-system,Helvetica,Arial,sans-serif;}
+  #summary{margin-top:.7rem; min-height:8rem; font-size:13px; display:none;}
+  #summary.show{display:block;}
+  .count{font-weight:600; color:var(--gold);}
+</style>
+</head>
+<body>
+<header>
+  <h1>London Walkthrough</h1>
+  <p>Silent Waters wedding estimator &middot; Aug 24 &middot; app open at
+  epicminds&#8209;eng.github.io/silent&#8209;waters&#8209;quote<br>
+  Tap a chip or type an answer. When you're done, hit the button at the bottom
+  and paste the result into the Claude session.</p>
+</header>
+
+<div id="form"></div>
+
+<div class="out">
+  <button id="copyBtn" type="button">Copy answers — <span class="count" id="count">0</span> answered</button>
+  <div class="hint">If copy doesn't work on this device, the text appears below — select and copy it by hand.</div>
+  <textarea id="summary" readonly aria-label="Answer summary"></textarea>
+</div>
+
+<script>
+var QUESTIONS = [
+ {s:"A. Quick pricing calls"},
+ {id:"A1", t:"Regatta buffet — $107 or $89 per person?",
+  c:"The brochure prints both: menu pages say $107 twice; the worked example charges $89 (the Reggae price).",
+  cur:"App says $107.", chips:["$107","$89"]},
+ {id:"A2", t:"Extra event staff — $930, $970, or $990?",
+  c:"The 2026 invoice billed $930; the brochure says $970 for a roster whose items add to $990.",
+  cur:"App says $930, added above 25 event guests.", chips:["$930","$970","$990"]},
+ {id:"A3", t:"Event fee waived at “7 days” — does a 7-night stay qualify?",
+  c:"People book in nights. A 6-night stay is 7 days.",
+  cur:"App waives at 7 nights.", chips:["7 nights waives it","Needs 7 nights+ (8 days)","6 nights / 7 days waives it"]},
+ {id:"A4", t:"Extra shuttle runs — $20 or $10 per additional passenger?",
+  c:"Brochure p.7 says $20, p.16 says $10; your email says $20.",
+  cur:"Not in the app yet either way.", chips:["$20","$10"]},
+ {id:"A5", t:"Gratuity — 20% of accommodation before or after the 14% discount?",
+  c:"Brochure says pre-discount; the 2026 invoice charged post-discount. Shown as an information line, not collected — but the printed number moves ~$700 on a typical stay.",
+  cur:"App follows the invoice: post-discount.", chips:["Post-discount (invoice)","Pre-discount (brochure)"]},
+ {id:"A6", t:"Second event day — its own fee?",
+  c:"The 2026 invoice had a separate $1,995 arrival-dinner event fee (waived as goodwill).",
+  cur:"App charges one event fee per stay.", chips:["One fee per stay","Each event day has a fee"]},
+ {id:"A7", t:"Season-crossing stays — priced night by night?",
+  c:"The 2026 invoice priced its April stay 2 nights high + 5 low. The app prices the whole stay from the check-in season — would have quoted that stay ~$1,060 high.",
+  cur:"App uses check-in season for whole stay.", chips:["Night by night (like the invoice)","Check-in season for whole stay"]},
+ {id:"A8", t:"Is the lawn (55–75 guests, tent required) still offered?",
+  c:"It's in your email but not the brochure, which jumps from pool (54) to tennis court (125).",
+  cur:"App offers it.", chips:["Yes, keep the lawn","No, drop it"]},
+ {id:"A9", t:"Your text listed changes 1, 2, 3, 4, 6 — was there a #5?",
+  c:"", cur:"", chips:["No, just numbering"]},
+
+ {s:"B. How it should work"},
+ {id:"B1", t:"The Extras step — keep, trim, or cut?",
+  c:"Bus, spa, bands, rum tasting. It adds up fast and can make the estimate look expensive before a couple submits.",
+  cur:"App shows all six extras.", chips:["Keep as is","Trim to 1–2 items","Cut the step — discuss on my call"]},
+ {id:"B2", t:"Event-day bar — show a number or leave it to you?",
+  c:"Food is à la carte per your note. The bar for event guests shows “quoted by Silent Waters” with no figure.",
+  cur:"App shows no bar number.", chips:["Leave it to my call","I'll give a per-person package"]},
+ {id:"B3", t:"Cocktail receptions — how should selections be priced?",
+  c:"Hors d'oeuvres are per selection of 30 pieces (min 4, items $45–163). For 50 guests, 4 selections is ~2.4 pieces each.",
+  cur:"Guest picks 4–12 selections, priced from the cheapest item.", chips:["Fine as is","Set a house recommendation"]},
+ {id:"B4", t:"Submissions go to reservations@silentwatersvilla.com — right inbox?",
+  c:"“Send to Silent Waters” opens the guest's email app with the full estimate in the body. You mentioned sorting an email problem.",
+  cur:"", chips:["That address is right"]},
+ {id:"B5", t:"Who sends the link?",
+  c:"Today it's a link you text or email to inquirers. It can also go on silentwatersvilla.com as a “Get an estimate” button.",
+  cur:"", chips:["I send the link","Put it on the website too"]},
+ {id:"B6", t:"Add the wedding-coordinator question?",
+  c:"Your inquiry email always asks “do you have a coordinator?” One optional question at the end; the answer arrives in the email.",
+  cur:"Not in the app yet.", chips:["Yes, add it","No"]},
+ {id:"B7", t:"Is this weddings-only?",
+  c:"The page says “Wedding Estimate” throughout. The same math works for reunions, birthdays, retreats.",
+  cur:"", chips:["Weddings only","Make it work for any event"]},
+
+ {s:"C. Wording — do these with the app open"},
+ {id:"C1", t:"Menu descriptions — one line under each menu?",
+  c:"Empress, Regatta, Reggae, Extraordinaire, Elegante, Grande, the two meal plans, the three event styles. Fields are built and empty — dictate a sentence each. Put the wording (or “see notes”) below.",
+  cur:"", chips:["Yes — wording in notes","Not needed"], big:true},
+ {id:"C2", t:"Read every screen aloud — anything that doesn't sound like Silent Waters?",
+  c:"All text is in one editable block. List any lines to change, screen by screen.",
+  cur:"", chips:[], big:true},
+ {id:"C3", t:"The estimate screen — anything you always tell couples that belongs here?",
+  c:"It shows one itemized number, deposit and gratuity greyed below the total, and a note that the final quote comes from you.",
+  cur:"", chips:["It's complete"], big:true},
+
+ {s:"D. Parking lot — later, no action today"},
+ {id:"D1", t:"Anything to promote from the parking lot?",
+  c:"Quote logging to a spreadsheet; embedding on the website; visitor meal add-ons; Gourmet lunch/dinner split; late/early check-in fees; Tryall access; the wider spa menu; updating the brochure PDFs so paperwork and app agree.",
+  cur:"", chips:["All stays parked"], big:true}
+];
+
+var answers = {};
+
+function esc(s){var d=document.createElement('div'); d.textContent=s; return d.innerHTML;}
+
+function build(){
+  var root=document.getElementById('form'), html='';
+  QUESTIONS.forEach(function(q){
+    if(q.s){ html+='<h2>'+esc(q.s)+'</h2>'; return; }
+    html+='<div class="q" id="q-'+q.id+'"><h3>'+q.id+'. '+esc(q.t)+'</h3>';
+    if(q.c) html+='<div class="ctx">'+esc(q.c)+'</div>';
+    if(q.cur) html+='<div class="cur">Currently: '+esc(q.cur)+'</div>';
+    if(q.chips && q.chips.length){
+      html+='<div class="chips">';
+      q.chips.forEach(function(ch,i){
+        html+='<span class="chip" data-q="'+q.id+'" data-v="'+esc(ch)+'">'+esc(ch)+'</span>';
+      });
+      html+='</div>';
+    }
+    html+='<textarea data-q="'+q.id+'" placeholder="Notes / answer…"'+
+      (q.big?' style="min-height:4.5rem"':'')+'></textarea></div>';
+  });
+  root.innerHTML=html;
+
+  root.addEventListener('click', function(e){
+    var c=e.target.closest('.chip'); if(!c) return;
+    var qid=c.getAttribute('data-q');
+    var was=c.classList.contains('on');
+    root.querySelectorAll('.chip[data-q="'+qid+'"]').forEach(function(x){x.classList.remove('on');});
+    if(!was){ c.classList.add('on'); answers[qid]=answers[qid]||{}; answers[qid].chip=c.getAttribute('data-v'); }
+    else { if(answers[qid]) delete answers[qid].chip; }
+    refresh();
+  });
+  root.addEventListener('input', function(e){
+    var t=e.target; if(t.tagName!=='TEXTAREA') return;
+    var qid=t.getAttribute('data-q');
+    answers[qid]=answers[qid]||{}; answers[qid].note=t.value.trim();
+    if(!answers[qid].note) delete answers[qid].note;
+    refresh();
+  });
+}
+
+function summaryText(){
+  var lines=['LONDON WALKTHROUGH ANSWERS — '+new Date().toDateString(),''];
+  QUESTIONS.forEach(function(q){
+    if(q.s){ lines.push('== '+q.s+' =='); return; }
+    var a=answers[q.id]||{};
+    var val=[a.chip, a.note].filter(Boolean).join(' — ');
+    lines.push(q.id+'. '+q.t);
+    lines.push('   ANSWER: '+(val||'(not discussed)'));
+  });
+  return lines.join('\n');
+}
+
+function refresh(){
+  var n=Object.keys(answers).filter(function(k){var a=answers[k];return a&&(a.chip||a.note);}).length;
+  document.getElementById('count').textContent=n;
+  var s=document.getElementById('summary');
+  if(s.classList.contains('show')) s.value=summaryText();
+}
+
+document.getElementById('copyBtn').addEventListener('click', function(){
+  var s=document.getElementById('summary');
+  s.value=summaryText(); s.classList.add('show');
+  var btn=this, done=function(ok){
+    btn.classList.add('copied');
+    btn.firstChild.textContent = ok ? 'Copied — paste it to Claude ' : 'Select the text below and copy ';
+    setTimeout(function(){ btn.classList.remove('copied');
+      btn.firstChild.textContent='Copy answers — '; refresh(); }, 2500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(s.value).then(function(){done(true);},function(){
+      s.focus(); s.select(); try{document.execCommand('copy');done(true);}catch(e){done(false);}
+    });
+  } else {
+    s.focus(); s.select();
+    try{ document.execCommand('copy'); done(true);}catch(e){ done(false); }
+  }
+});
+
+build();
+</script>
+</body>
+</html>
