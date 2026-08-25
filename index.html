@@ -952,6 +952,13 @@ details.breakdown[open] > summary::after{ content: "–"; }
     <div class="field">
       <span class="field__label" id="menuLabel" data-copy="event.menuLabel"></span>
       <div class="choices" id="menuChoices" role="radiogroup" aria-labelledby="menuLabel"></div>
+      <label class="extra" id="secondEntreeField" hidden>
+        <input type="checkbox" id="secondEntreeInput">
+        <span class="extra__body">
+          <span class="extra__title" data-copy="event.secondEntreeLabel"></span>
+          <span class="extra__meta" data-copy="event.secondEntreeMeta"></span>
+        </span>
+      </label>
       <p class="note note--info" id="cocktailNote" hidden></p>
     </div>
 
@@ -1146,9 +1153,10 @@ const PRICES = {
   ],
   /* London meeting 2026-08-24: "events under 20 guests are not charged an
      event fee." This REPLACES the old waiver, which keyed off the number of
-     outside visitors (Wedding pack p.10, "up to six outside visitors").
-     Assumption: exactly 20 guests IS charged — flip to `> ` in
-     eventFeeApplies() if London means strictly over 20. */
+     outside visitors. Note: on the recording London also restated the
+     historical rule — "the rule is if there's no more than six visiting
+     guests" [17:09] — but the under-20 threshold governs, per Chad's
+     meeting notes. Assumption: exactly 20 guests IS charged. */
   eventFeeMinGuests: 20,
 
   /* Event menus, per person */
@@ -1169,19 +1177,28 @@ const PRICES = {
       bestFor: "Stations and platters, works at any size.",
       cap: 125,
       description: "",
+      /* London recording, [12:28-12:45]: about 70% of couples add a second
+         protein — "that's $15 a person". Optional toggle, buffet only. */
+      secondEntreePerPerson: 15,
       menus: [
         { key: "empress", label: "Empress", price: 127, description: "" },
+        /* $107 CONFIRMED — London recording, [10:42]: "we increased"; the
+           $89 in the brochure's worked example was the stale price. */
         { key: "regatta", label: "Regatta", price: 107, description: "" },
         { key: "reggae",  label: "Reggae",  price: 89, description: "" }
       ]
     },
-    /* Hors d'oeuvres. London meeting 2026-08-24: $110 per set, four sets
-       per 30 guests, worked out from the head count rather than picked by
-       the guest. This replaces the per-selection picker built from Menu
-       Options pack p.3.
+    /* Hors d'oeuvres. MANDATORY for every event, whatever the service
+       style — London recording, [54:03-54:19]: "it has to be no choice,
+       they're mandatory" (guests are otherwise drinking on empty stomachs
+       while the photos run long). Four sets per 30 guests: 30 people = 4
+       sets, 60 = 8, 120 = 16 [54:23, 58:03-58:45].
 
-       Assumption: sets = ceil(guests / 30) x 4, so 50 guests is 8 sets and
-       $880. */
+       TODO: $110 per set is a working average — the menu prices each set
+       individually ("it's all different pricing", [58:11]). Replace with
+       real set pricing when London picks the selections.
+
+       Assumption: sets = ceil(guests / 30) x 4, so 50 guests is 8 sets. */
     cocktail: {
       label: "Cocktail",
       bestFor: "Hors d'oeuvres, standing and roaming.",
@@ -1200,6 +1217,17 @@ const PRICES = {
      the set gives a per-person bar rate or a bar package price. The $45 per
      person per event day that used to sit here was invented and has been
      removed. The bar is disclosed as a line with no amount instead. */
+
+  /* London recording, [48:43-49:27]: on an event day, staying guests come
+     OFF the meal plan (one meal-plan day subtracted per event day), are
+     charged the Gourmet lunch instead, and the event dinner then covers
+     everyone. "we charge them $44 for lunch ... they're getting overcharged
+     right now ... paying for the regatta dinner plus the normal
+     [All-Inclusive] dinner."
+     Rate is the Gourmet lunch from Info p.8. Assumption: charged per
+     staying guest aged 5+, either plan; under-5s stay free as everywhere
+     else. */
+  eventDayLunchPerGuest: 44,
 
   /* The event day is catered a la carte from the wedding menus for EVERY
      attendee, staying and visiting alike.
@@ -1239,7 +1267,9 @@ const PRICES = {
       { role: "Bartenders",         rate: 150, totals: [2, 3, 4] },
       { role: "Servers",            rate: 95,  totals: [4, 5, 6] },
       { role: "Kitchen assistants", rate: 135, totals: [3, 4, 5] },
-      { role: "Security guard",     rate: 150, totals: [1, 1, 1] }
+      /* London recording, [27:17]: "we always get two once we have to
+         leave the pool area" — one guard up to 54 guests, two beyond. */
+      { role: "Security guard",     rate: 150, totals: [1, 2, 2] }
     ]
   },
 
@@ -1302,12 +1332,11 @@ const PRICES = {
       quoted: true }
   ],
 
-  /* Information Pack p.1 and p.5 #11; every pack carries the note.
-     Applies to accommodation (Statement p.1 "Government Tax"), meal plans,
-     event food, extras — and to the event fee, per Information Pack p.20 #4:
-     "an event fee starting at USD 1,950 up to 8,750 will apply, plus a 10%
-     GCT." */
-  gct: 0.10,
+  /* London recording, [56:03]: "our tax is going up from 10% to 15% so you
+     might as well start doing that now." Was 0.10 (Information Pack p.1 and
+     p.5 #11; Statement p.1 "Government Tax"). Applies to accommodation,
+     meal plans, event food, extras and the event fee (Info p.20 #4). */
+  gct: 0.15,
 
   /* Information Pack p.21 and Wedding pack p.21: "A mandatory tip of 20%
      (if paid in USD cash) or 23% (if paid in USD credit card) will be
@@ -1462,7 +1491,9 @@ const COPY = {
     platedOverCap: "Plated service is capped at {cap} guests. With {guests} on the list, buffet or cocktail will serve you better — we have estimated it anyway.",
     venueNote: "<strong>{venue}</strong> — {note} Chosen automatically for {guests} guests.",
     belowFeeMinimum: "Events under {min} guests are not charged an event fee.",
-    horsDoeuvresNote: "Hors d'oeuvres are ${price} per set, four sets per {per} guests. {guests} guests works out at {sets} sets.",
+    horsDoeuvresNote: "Hors d'oeuvres are served at every event — four sets per {per} guests at ${price} a set. {guests} guests works out at {sets} sets.",
+    secondEntreeLabel: "Add a second entrée — $15 per person",
+    secondEntreeMeta: "Most couples add a second protein to the buffet.",
     selectionsLabel: "Hors d'oeuvres selections",
     selectionsFewer: "Fewer selections",
     selectionsMore: "More selections",
@@ -1529,8 +1560,8 @@ const COPY = {
     staffNotNeeded: "Not required at {guests} guests",
     extras: "Extras",
     extrasNone: "None selected",
-    gct: "GCT (10%)",
-    gctSub: "On accommodation after discount, meal plan, event fee, event food and extras",
+    gct: "GCT (15%)",
+    gctSub: "On everything above except event staffing",
     total: "Estimated total",
     totalSub: "Everything above",
     stayTotal: "Stay subtotal",
@@ -1543,7 +1574,15 @@ const COPY = {
     staffSub: "{roster} · {band} · {rate} per event day",
     staffBaseNote: "Includes the villa's base team ({base}), charged on the event day.",
     eventFeeBelowMin: "Waived — events under {min} guests are not charged an event fee",
-    eventFoodCocktailSub: "{sets} sets of hors d'oeuvres at ${price} each × {days}",
+    horsDoeuvres: "Hors d'oeuvres",
+    horsDoeuvresSub: "Served at every event · {sets} sets at ${price} each × {days}",
+    secondEntree: "Second entrée",
+    secondEntreeSub: "$15 × {guests} guests × {days}",
+    eventDayLunch: "Event-day lunch for staying guests",
+    eventDayLunchSub: "${rate} × {guests} staying guests × {days} — the event dinner then covers everyone",
+    shuttle: "Complimentary shuttle",
+    shuttleSub: "Included with your event",
+    shuttleValue: "Included",
     extrasQuoted: "{items} — quoted by Silent Waters",
     deposit: "Refundable damage deposit",
     depositSub: "Held against the card on file and returned after check-out · not in the total"
@@ -1602,6 +1641,7 @@ const COPY = {
 
   /* The bar lines. The bar is never given a number — these say so. */
   bar: {
+    alcoholBudget: "Bar is billed on consumption — most weddings budget $80–100 per person, retained with the damage deposit and refunded unused.",
     eventQuoted: "Event bar — quoted by Silent Waters",
     allInclusiveNote: "Overnight guests' drinks are covered by All-Inclusive. Drinks for the {visitors} visiting are billed on consumption from the à la carte beverage menu and are quoted by Silent Waters.",
     cocktailMenuLabel: "Hors d'oeuvres selections"
@@ -1781,7 +1821,9 @@ function calcQuote(input) {
     : (style.menus.find(m => m.key === inp.menuKey) || style.menus[0]);
   const menuPrice = menu ? menu.price : 0;
 
-  const sets = isCocktail ? horsDoeuvresSets(eventGuests) : 0;
+  /* Hors d'oeuvres are mandatory for every event (London recording,
+     [54:03-54:19]), so the sets are computed whatever the style. */
+  const sets = hasEvent ? horsDoeuvresSets(eventGuests) : 0;
 
   /* ---- accommodation --------------------------------------------- */
   let accommodationBase = 0;
@@ -1848,9 +1890,29 @@ function calcQuote(input) {
      Catered a la carte from the wedding menus (Menu Options pack p.1-3)
      for every attendee, staying and visiting alike. One number, not a
      range — London, 2026-08-23. */
-  const eventFood = !hasEvent ? 0 : (isCocktail
-    ? r2(sets * style.setPrice * eventDays)
-    : r2(menuPrice * eventGuests * eventDays));
+  const setPrice = PRICES.eventStyles.cocktail.setPrice;
+  const horsDoeuvres = hasEvent ? r2(sets * setPrice * eventDays) : 0;
+
+  /* For a cocktail reception the hors d'oeuvres ARE the menu, so the
+     dinner line is zero rather than double-counting the sets. */
+  const eventFood = !hasEvent || isCocktail
+    ? 0
+    : r2(menuPrice * eventGuests * eventDays);
+
+  /* London recording, [12:28-12:45]: optional second entrée on buffets,
+     $15 per person — about 70% of couples take it. */
+  const secondEntree = hasEvent && styleKey === "buffet" && inp.secondEntree === true;
+  const secondEntreeCost = secondEntree
+    ? r2(PRICES.eventStyles.buffet.secondEntreePerPerson * eventGuests * eventDays)
+    : 0;
+
+  /* London recording, [48:43-49:27]: staying guests come off the meal plan
+     on the event day and are charged the Gourmet lunch instead; the event
+     dinner then covers everyone. Under-5s stay free. */
+  const lunchGuests = Math.max(0, stayers - under5);
+  const eventDayLunch = hasEvent
+    ? r2(PRICES.eventDayLunchPerGuest * lunchGuests * eventDays)
+    : 0;
 
   /* ---- bar --------------------------------------------------------
      R2: on Gourmet the bar is NOT estimated. Drinks are bought from the
@@ -1906,8 +1968,10 @@ function calcQuote(input) {
   /* Two groups, one combined total (London meeting 2026-08-24). Extras
      belong to the Stay. */
   const stayTotal = r2(accommodation + mealPlan + extras);
-  const eventTotal = r2(eventFee + eventFood + staff);
-  const gct = r2((accommodation + mealPlan + eventFee + extras + eventFood) * PRICES.gct);
+  const eventTotal = r2(eventFee + eventFood + horsDoeuvres + secondEntreeCost +
+                        eventDayLunch + staff);
+  const gct = r2((accommodation + mealPlan + eventFee + extras + eventFood +
+                  horsDoeuvres + secondEntreeCost + eventDayLunch) * PRICES.gct);
 
   /* Gratuity is NOT collected up front and is NOT part of the total.
      London, 2026-08-23: it is paid in cash at check-out. We illustrate the
@@ -1983,6 +2047,14 @@ function calcQuote(input) {
     accommodationOverflow: r2(overflowCost),
 
     hasEvent: hasEvent,
+    horsDoeuvres: horsDoeuvres,
+    secondEntree: secondEntree,
+    secondEntreeCost: secondEntreeCost,
+    eventDayLunch: eventDayLunch,
+    lunchGuests: lunchGuests,
+    /* Free shuttle whenever an event fee is actually charged —
+       London recording, [30:00]. */
+    shuttleIncluded: hasEvent && !eventFeeWaived,
     stayTotal: stayTotal,
     eventTotal: eventTotal,
     mealPlanNights: mealPlanNights,
@@ -1995,7 +2067,7 @@ function calcQuote(input) {
     /* cocktail specifics */
     isCocktail: isCocktail,
     sets: sets,
-    setPrice: isCocktail ? style.setPrice : 0,
+    setPrice: setPrice,
 
     /* money, with the 10% GCT folded in — handy for cross-checking
        against the info pack, which quotes tax-inclusive figures */
@@ -2178,6 +2250,7 @@ const DEFAULTS = {
   mealPlan: "ai",
   eventGuests: 50, eventDays: 1,
   eventStyle: "buffet", menuKey: "regatta",
+  secondEntree: false,
   hasEvent: true,
   extras: { massage: false, rumTasting: false, reggaeBand: false, mentoBand: false,
             yacht: false, vipBeach: false },
@@ -2752,15 +2825,20 @@ function renderEvent(q) {
   $$('input[name="eventStyle"]').forEach(r => { r.checked = r.value === q.styleKey; });
   renderMenuChoices(q);
 
+  /* Hors d'oeuvres are mandatory for every event, so the note always
+     shows (London recording, [54:03-54:19]). */
   const cn = $("#cocktailNote");
-  if (q.isCocktail) {
-    cn.innerHTML = "<span>" + esc(t(COPY.event.horsDoeuvresNote, {
-      price: PRICES.eventStyles.cocktail.setPrice,
-      per: PRICES.eventStyles.cocktail.guestsPerBlock,
-      guests: q.eventGuests, sets: q.sets
-    })) + "</span>";
-  }
-  show(cn, q.isCocktail);
+  cn.innerHTML = "<span>" + esc(t(COPY.event.horsDoeuvresNote, {
+    price: PRICES.eventStyles.cocktail.setPrice,
+    per: PRICES.eventStyles.cocktail.guestsPerBlock,
+    guests: q.eventGuests, sets: q.sets
+  })) + "</span>";
+  show(cn, true);
+
+  const sef = $("#secondEntreeField");
+  show(sef, q.styleKey === "buffet");
+  const sei = $("#secondEntreeInput");
+  if (sei && document.activeElement !== sei) sei.checked = state.secondEntree === true;
 
   const fm = $("#eventFeeMinNote");
   fm.innerHTML = "<span>" + esc(t(COPY.event.belowFeeMinimum, {
@@ -2884,16 +2962,38 @@ function breakdownRows(q) {
       money2.format(L.eventFee),
       q.eventFeeWaived ? "line--muted" : ""));
 
-    rows.push(lineRow(C.eventFood,
-      q.isCocktail
-        ? t(C.eventFoodCocktailSub, {
-            sets: q.sets, price: q.setPrice, days: daysWord(q.eventDays) })
-        : t(C.eventFoodSub, {
-            style: q.styleLabel, menu: q.menuLabel, price: q.menuPrice,
-            guests: q.eventGuests, days: daysWord(q.eventDays) }),
-      money2.format(L.eventFood)));
+    if (q.shuttleIncluded) {
+      rows.push(lineRow(C.shuttle, C.shuttleSub, C.shuttleValue, "line--included"));
+    }
 
-    rows.push(lineRow(q.barDisclosure, q.barNote,
+    /* A cocktail reception's food IS the hors d'oeuvres line below. */
+    if (!q.isCocktail) {
+      rows.push(lineRow(C.eventFood,
+        t(C.eventFoodSub, {
+          style: q.styleLabel, menu: q.menuLabel, price: q.menuPrice,
+          guests: q.eventGuests, days: daysWord(q.eventDays) }),
+        money2.format(L.eventFood)));
+    }
+
+    if (q.secondEntree) {
+      rows.push(lineRow(C.secondEntree,
+        t(C.secondEntreeSub, { guests: q.eventGuests, days: daysWord(q.eventDays) }),
+        money2.format(q.secondEntreeCost)));
+    }
+
+    rows.push(lineRow(C.horsDoeuvres,
+      t(C.horsDoeuvresSub, {
+        sets: q.sets, price: q.setPrice, days: daysWord(q.eventDays) }),
+      money2.format(q.horsDoeuvres)));
+
+    rows.push(lineRow(C.eventDayLunch,
+      t(C.eventDayLunchSub, {
+        rate: PRICES.eventDayLunchPerGuest, guests: q.lunchGuests,
+        days: daysWord(q.eventDays) }),
+      money2.format(q.eventDayLunch)));
+
+    rows.push(lineRow(q.barDisclosure,
+      q.barNote + " " + COPY.bar.alcoholBudget,
       q.barIncluded ? C.barIncludedValue : C.barExcludedValue, "line--disclose"));
 
     rows.push(lineRow(C.staff,
@@ -3077,13 +3177,26 @@ function estimateText(q) {
             ? t(LN.eventFeeBelowMin, { min: q.eventFeeMinGuests })
             : t(LN.eventFeeWaivedLong, { nights: PRICES.weekFromNights }))
         : t(LN.eventFeeCharged, { nights: nightsWord(q.nights) })) + "]");
-    rows.push(pad(LN.eventFood, money2.format(L.eventFood)) + "   [" +
-      (q.isCocktail
-        ? q.sets + " sets x $" + q.setPrice + " x " + q.eventDays
-        : "$" + q.menuPrice + " x " + q.eventGuests + " x " + q.eventDays) + "]");
+    if (q.shuttleIncluded) {
+      rows.push(pad(COPY.lines.shuttle, "INCLUDED") + "   [" + COPY.lines.shuttleSub + "]");
+    }
+    if (!q.isCocktail) {
+      rows.push(pad(LN.eventFood, money2.format(L.eventFood)) + "   [$" +
+        q.menuPrice + " x " + q.eventGuests + " x " + q.eventDays + "]");
+    }
+    if (q.secondEntree) {
+      rows.push(pad(LN.secondEntree, money2.format(q.secondEntreeCost)) +
+        "   [$15 x " + q.eventGuests + " x " + q.eventDays + "]");
+    }
+    rows.push(pad(LN.horsDoeuvres, money2.format(q.horsDoeuvres)) +
+      "   [mandatory - " + q.sets + " sets x $" + q.setPrice + " x " + q.eventDays + "]");
+    rows.push(pad(LN.eventDayLunch, money2.format(q.eventDayLunch)) +
+      "   [$" + PRICES.eventDayLunchPerGuest + " x " + q.lunchGuests +
+      " staying guests x " + q.eventDays + "]");
     rows.push(pad(C.barLabel, q.barIncluded ? C.barNotEstimated : C.barNotIncluded) +
       "   [" + q.barDisclosure + "]");
     rows.push("    " + q.barNote);
+    rows.push("    " + COPY.bar.alcoholBudget);
     if (q.corkageNote) rows.push("    " + q.corkageNote);
     rows.push(pad(LN.staff, money2.format(L.staff)) + "   [" +
       (q.staffPerDay > 0
@@ -3260,6 +3373,8 @@ function wire() {
     }
 
     if (t.name === "menuKey") { setState({ menuKey: t.value }); return; }
+
+    if (t.id === "secondEntreeInput") { setState({ secondEntree: t.checked }); return; }
 
     if (t.name === "extra") {
       const extras = Object.assign({}, state.extras);
