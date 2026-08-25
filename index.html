@@ -310,6 +310,16 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
 /* Past days, and days that would break the season minimum: inert. */
 .cal__day:disabled{ color: var(--line); cursor: not-allowed; }
 
+/* Booked nights (Level 1: the BLOCKED list; Level 2: the synced feed).
+   Distinct from ordinary greying: a strike through the number on a faint
+   wash, so "taken" reads differently from "not applicable". */
+.cal__day[data-blocked="1"]{
+  color: var(--ink-mute);
+  text-decoration: line-through;
+  background: var(--line-soft);
+  border-radius: var(--radius-sm);
+}
+
 /* Today: an outlined circle, never filled — it is a landmark, not a choice. */
 .cal__day[data-today="1"]{
   box-shadow: inset 0 0 0 1px var(--ink-mute);
@@ -361,6 +371,8 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   border-radius: var(--radius-pill);
   background: var(--blue);
 }
+.cal__legend--booked{ text-decoration: line-through; }
+.cal__legend--booked::before{ background: var(--line); border-radius: var(--radius-sm); }
 .cal__done{
   border: 0;
   background: none;
@@ -882,6 +894,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
     </div>
     <p class="note note--brand" id="seasonNote" hidden></p>
     <p class="note note--warn" id="minNote" hidden></p>
+    <p class="note note--info" data-copy="dates.availabilityNote"></p>
     <p class="note note--info" id="discountHint"></p>
     <p class="note note--info" id="feeMinNote"></p>
     <div class="lever" id="leverDates" hidden></div>
@@ -1369,6 +1382,32 @@ const PRICES = {
 };
 
 /* =================================================================
+   BLOCKED — dates the villa is not available.
+   -----------------------------------------------------------------
+   FOR LONDON: list the dates that are booked and they will show as
+   "Booked" in the calendar, greyed out so guests cannot pick them.
+
+   Two ways to write a date, both inside the [ ] below:
+
+     "2026-12-24"                     one single night
+     ["2027-02-10", "2027-02-15"]     a range of nights
+
+   A range blocks NIGHTS: its second date is the CHECKOUT day, so those
+   guests leave that morning and a new stay MAY check in on that day.
+   ["2027-02-10", "2027-02-15"] blocks the nights of Feb 10, 11, 12, 13
+   and 14 — and Feb 15 stays open for a new arrival.
+
+   Keep the quote marks and the commas exactly as they are, one entry per
+   line. Then run ./deploy.sh (or ask Chad).
+   ================================================================= */
+const BLOCKED = [
+  /* Example entries — replace with real bookings:
+  "2026-12-24",
+  ["2027-02-10", "2027-02-15"],
+  */
+];
+
+/* =================================================================
    COPY — every word a guest sees.
    -----------------------------------------------------------------
    FOR WHOEVER IS EDITING THE WORDING (you do not need to know how to
@@ -1425,6 +1464,7 @@ const COPY = {
     lede: "Tell us when you would like the estate, and we will work out the season and the nightly rate.",
     fieldLabel: "Your dates",
     fieldEmpty: "Select your dates",
+    availabilityNote: "Availability shown is approximate — Silent Waters confirms every booking.",
     discountHint: "Stays of {nights} nights or more, booked directly with the villa, take {percent}% off the accommodation — and the event fee is waived.",
     seasonWithNights: "<strong>{season}</strong> ({window}) — {nights}. Minimum stay {min} nights.",
     seasonWithoutNights: "<strong>{season}</strong> ({window}). Minimum stay {min} nights.",
@@ -1436,6 +1476,7 @@ const COPY = {
     summaryAwaiting: "{start} – select your check-out date",
     summaryComplete: "{start} – {end} · {nights}",
     feeWaivedLegend: "Event fee waived from here",
+    bookedLegend: "Booked",
     done: "Done",
     prevMonth: "Previous month",
     nextMonth: "Next month"
@@ -2133,6 +2174,61 @@ function sevenNightLever(input) {
    reaches calcQuote comes through it.
    ================================================================= */
 
+/**
+ * Expands the BLOCKED list (singles and [start, checkout] ranges) into a
+ * Set of blocked NIGHTS. A range's end date is the checkout day and is
+ * NOT blocked — a new stay may check in that day.
+ */
+function expandBlocked(list) {
+  const nights = new Set();
+  (list || []).forEach(entry => {
+    if (typeof entry === "string") {
+      if (entry) nights.add(entry);
+      return;
+    }
+    if (Array.isArray(entry) && entry[0] && entry[1]) {
+      let d = entry[0];
+      /* hard stop guards a backwards range from looping forever */
+      for (let i = 0; d < entry[1] && i < 1000; i++) {
+        nights.add(d);
+        d = addNights(d, 1);
+      }
+    }
+  });
+  return nights;
+}
+
+/* The live set: the hand-edited BLOCKED list, plus whatever the sync job
+   published as blocked-dates.json (Level 2). Rebuilt by applyBlockedDates. */
+let BLOCKED_SET = null; /* built after addNights exists — see boot */
+
+/**
+ * Replace the runtime blocked set: the union of the manual list and any
+ * fetched nights. Also the test seam.
+ */
+function applyBlockedDates(fetchedNights) {
+  BLOCKED_SET = expandBlocked(BLOCKED);
+  (fetchedNights || []).forEach(n => {
+    if (typeof n === "string" && /^\d{4}-\d{2}-\d{2}$/.test(n)) BLOCKED_SET.add(n);
+  });
+  return BLOCKED_SET;
+}
+
+/** Is this NIGHT unavailable? (A checkout on this date may still be fine.) */
+function isNightBlocked(iso) {
+  return BLOCKED_SET !== null && BLOCKED_SET.has(iso);
+}
+
+/** Does the stay [inIso, outIso) sleep on any blocked night? */
+function rangeHasBlockedNight(inIso, outIso) {
+  let d = inIso;
+  for (let i = 0; d < outIso && i < 1000; i++) {
+    if (isNightBlocked(d)) return true;
+    d = addNights(d, 1);
+  }
+  return false;
+}
+
 /** Today as yyyy-mm-dd, in local time. */
 function todayIso(now) {
   const d = now || new Date();
@@ -2168,12 +2264,22 @@ function pickerReduce(sel, dateIso) {
   const inIso = (sel && sel.checkIn) || "";
   const outIso = (sel && sel.checkOut) || "";
 
+  /* A blocked night can never be slept on, so it can never become a
+     check-in. The UI disables these cells; the model refuses them too. */
+  if (isNightBlocked(dateIso)) return { checkIn: inIso, checkOut: outIso };
+
   /* Nothing chosen yet, or a finished range: this tap starts a new one. */
   if (!inIso || outIso) return { checkIn: dateIso, checkOut: "" };
 
   /* Awaiting a check-out. A tap on or before the check-in restarts from
      that day rather than producing a backwards range. */
   if (dateIso <= inIso) return { checkIn: dateIso, checkOut: "" };
+
+  /* A stay may not span a booked night. A tap beyond one restarts the
+     selection from the tapped day instead of completing the range. */
+  if (rangeHasBlockedNight(inIso, dateIso)) {
+    return { checkIn: dateIso, checkOut: "" };
+  }
 
   /* Below the season minimum — the cell is disabled in the UI, but guard
      it here too so the model holds on its own. */
@@ -2190,12 +2296,14 @@ function pickerDayFlags(dateIso, sel, today) {
   const outIso = (sel && sel.checkOut) || "";
   const awaitingOut = Boolean(inIso) && !outIso;
   const isPast = dateIso < today;
+  const isBlocked = isNightBlocked(dateIso);
   const nights = inIso && dateIso > inIso ? nightsBetween(inIso, dateIso) : 0;
   const belowMinimum = awaitingOut && dateIso > inIso &&
     nights < minNightsForDate(inIso);
 
   return {
-    disabled: isPast || belowMinimum,
+    disabled: isPast || belowMinimum || isBlocked,
+    isBlocked: isBlocked,
     isPast: isPast,
     belowMinimum: belowMinimum,
     isCheckIn: Boolean(inIso) && dateIso === inIso,
@@ -2675,10 +2783,12 @@ function renderCalendar() {
       (edge && sel.checkOut ? ' data-edge="' + edge + '"' : "") + '>' +
       '<button type="button" class="cal__day" data-cal-day="' + iso + '"' +
         (f.disabled ? " disabled" : "") +
-        (f.isToday ? ' data-today="1"' : "") +
+        (f.isBlocked ? ' data-blocked="1"' : "") +
+        (f.isToday && !f.isBlocked ? ' data-today="1"' : "") +
         (edge ? ' data-edge="' + edge + '"' : "") +
         (f.isSeventhNight ? ' data-seventh="1"' : "") +
-        ' aria-label="' + esc(fmtDate(iso)) + '">' +
+        ' aria-label="' + esc(fmtDate(iso)) +
+          (f.isBlocked ? " — " + esc(COPY.calendar.bookedLegend) : "") + '">' +
         Number(iso.slice(8)) +
       '</button></span>';
   });
@@ -2686,7 +2796,8 @@ function renderCalendar() {
   html += '</div><p class="cal__foot">' +
     (awaitingOut
       ? '<span class="cal__legend">' + esc(COPY.calendar.feeWaivedLegend) + '</span>'
-      : '<span></span>') +
+      : '<span class="cal__legend cal__legend--booked">' +
+          esc(COPY.calendar.bookedLegend) + '</span>') +
     '<button type="button" class="cal__done" data-cal-close="1">' +
       esc(COPY.calendar.done) + '</button></p>';
 
@@ -3425,6 +3536,25 @@ function wire() {
 /* =================================================================
    Boot
    ================================================================= */
+/* Level 1: the hand-edited list. Level 2 merges the synced feed below. */
+applyBlockedDates([]);
+
+/* Level 2 — availability published by the sync job as blocked-dates.json
+   in this same directory. Absent until London provides the eviivo iCal
+   feed, so a 404 (or file://, or a parse error) is entirely normal: fall
+   back to the manual list with no console noise and no UI difference. */
+(function fetchSyncedAvailability() {
+  if (typeof fetch !== "function") return;
+  fetch("blocked-dates.json?v=" + todayIso(), { cache: "no-store" })
+    .then(r => (r.ok ? r.json() : null))
+    .then(data => {
+      if (!data || !Array.isArray(data.nights)) return;
+      applyBlockedDates(data.nights);
+      render();
+    })
+    .catch(() => { /* dormant until the feed exists */ });
+})();
+
 paintStatic();
 buildScopeChoices();
 buildCounters();
@@ -3456,6 +3586,11 @@ window.SW = {
   LEGACY_SEEDED_DATES: LEGACY_SEEDED_DATES,
   pickerReduce: pickerReduce,
   pickerPhase: pickerPhase,
+  BLOCKED: BLOCKED,
+  expandBlocked: expandBlocked,
+  applyBlockedDates: applyBlockedDates,
+  isNightBlocked: isNightBlocked,
+  rangeHasBlockedNight: rangeHasBlockedNight,
   pickerDayFlags: pickerDayFlags,
   pickerSummary: pickerSummary,
   monthGrid: monthGrid,
