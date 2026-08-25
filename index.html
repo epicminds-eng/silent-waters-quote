@@ -1144,7 +1144,7 @@ const PRICES = {
       label: "All-Inclusive",
       bestFor: "Best for groups who want everything — meals, snacks and drinks — handled from arrival.",
       adults: 239, teens: 169, kids: 99, under5: 0,
-      description: "",
+      description: "Chef-prepared breakfast, lunch, hors d'oeuvres and three-course dinner, with upper-shelf bar and transport.",
       barIncluded: true,
       corkage: 0
     },
@@ -1152,7 +1152,7 @@ const PRICES = {
       label: "Gourmet",
       bestFor: "Best for groups who want chef-prepared food at a fixed price, and who are happy to settle the bar separately.",
       adults: 123, teens: 123, kids: 62, under5: 0,
-      description: "",
+      description: "The same chef-prepared menus at a fixed price; beverages billed at check-out.",
       /* R2 — food only. Every drink is bought from Silent Waters' inventory
          and billed at the end of the stay. This is NOT estimated anywhere in
          this tool: an understated bar tab is the most damaging thing the page
@@ -1173,13 +1173,11 @@ const PRICES = {
     { upToNights: 6, fee: 1950 },
     { upToNights: Infinity, fee: 0 }
   ],
-  /* London meeting 2026-08-24: "events under 20 guests are not charged an
-     event fee." This REPLACES the old waiver, which keyed off the number of
-     outside visitors. Note: on the recording London also restated the
-     historical rule — "the rule is if there's no more than six visiting
-     guests" [17:09] — but the under-20 threshold governs, per Chad's
-     meeting notes. Assumption: exactly 20 guests IS charged. */
-  eventFeeMinGuests: 20,
+  /* SETTLED — confirmed by London via Chad, 2026-08-25: no event fee when
+     total event guests are 20 OR FEWER; 21 is charged. The guest-count
+     rule governs. (Historical note only: the brochures' old waiver keyed
+     off "no more than six visiting guests" — retired.) */
+  eventFeeMaxWaived: 20,
 
   /* Event menus, per person */
   eventStyles: {
@@ -1187,27 +1185,33 @@ const PRICES = {
       label: "Plated",
       bestFor: "Seated service, capped at 30 guests.",
       cap: 30,
-      description: "",
+      description: "Each guest individually served at the table by our staff.",
       menus: [
-        { key: "extraordinaire", label: "Extraordinaire", price: 137, description: "" },
-        { key: "elegante",       label: "Elegante",       price: 115, description: "" },
-        { key: "grande",         label: "Grande",         price: 97, description: "" }
+        { key: "extraordinaire", label: "Extraordinaire", price: 137,
+          description: "Six courses building to surf & turf — lobster tail and filet." },
+        { key: "elegante",       label: "Elegante",       price: 115,
+          description: "Sashimi piccata to grilled whole catch of the day with fresh fruit salsa." },
+        { key: "grande",         label: "Grande",         price: 97,
+          description: "Crab cakes, cream of callaloo soup and chicken Vesuvio with bow-tie pasta." }
       ]
     },
     buffet: {
       label: "Buffet",
       bestFor: "Stations and platters, works at any size.",
       cap: 125,
-      description: "",
+      description: "Help yourself at your leisure from a wide spread of dishes.",
       /* London recording, [12:28-12:45]: about 70% of couples add a second
          protein — "that's $15 a person". Optional toggle, buffet only. */
       secondEntreePerPerson: 15,
       menus: [
-        { key: "empress", label: "Empress", price: 127, description: "" },
+        { key: "empress", label: "Empress", price: 127,
+          description: "Three entrées — Dijon-crusted pork tenderloin, pan-seared snapper and chicken scallopine." },
         /* $107 CONFIRMED — London recording, [10:42]: "we increased"; the
            $89 in the brochure's worked example was the stale price. */
-        { key: "regatta", label: "Regatta", price: 107, description: "" },
-        { key: "reggae",  label: "Reggae",  price: 89, description: "" }
+        { key: "regatta", label: "Regatta", price: 107,
+          description: "Roast suckling pig, skewered beef brochette and tilapia steamed in coconut milk." },
+        { key: "reggae",  label: "Reggae",  price: 89,
+          description: "Island favourites — jerk chicken or pork, grilled fish, peas and rice." }
       ]
     },
     /* Hors d'oeuvres. MANDATORY for every event, whatever the service
@@ -1216,16 +1220,16 @@ const PRICES = {
        while the photos run long). Four sets per 30 guests: 30 people = 4
        sets, 60 = 8, 120 = 16 [54:23, 58:03-58:45].
 
-       TODO: $110 per set is a working average — the menu prices each set
-       individually ("it's all different pricing", [58:11]). Replace with
-       real set pricing when London picks the selections.
+       $110 per set is the agreed working average for the rough quote
+       (settled 2026-08-25, London via Chad) — final selections are priced
+       individually by Silent Waters when the couple chooses them.
 
        Assumption: sets = ceil(guests / 30) x 4, so 50 guests is 8 sets. */
     cocktail: {
       label: "Cocktail",
       bestFor: "Hors d'oeuvres, standing and roaming.",
       cap: 125,
-      description: "",
+      description: "Guests mingle while cocktails and hors d'oeuvres are served throughout.",
       setPrice: 110,
       setsPerBlock: 4,
       guestsPerBlock: 30,
@@ -1540,7 +1544,7 @@ const COPY = {
     perPerson: "${price} per person",
     platedOverCap: "Plated service is capped at {cap} guests. With {guests} on the list, buffet or cocktail will serve you better — we have estimated it anyway.",
     venueNote: "<strong>{venue}</strong> — {note} Chosen automatically for {guests} guests.",
-    belowFeeMinimum: "Events under {min} guests are not charged an event fee.",
+    belowFeeMinimum: "Events of {min} guests or fewer are not charged an event fee.",
     horsDoeuvresNote: "Hors d'oeuvres are served at every event — four sets per {per} guests at ${price} a set. {guests} guests works out at {sets} sets.",
     secondEntreeLabel: "Add a second entrée — $15 per person",
     secondEntreeMeta: "Most couples add a second protein to the buffet.",
@@ -1597,7 +1601,7 @@ const COPY = {
     mealPlanSub: "{plan} · {stayers} guests × {nights}",
     eventFee: "Event fee",
     eventFeeWaivedLong: "Waived — stays of {nights} nights or longer",
-    eventFeeWaivedSize: "Waived — six or fewer outside visitors",
+    eventFeeWaivedSize: "Waived — events of 20 guests or fewer",
     eventFeeCharged: "One fee for the stay, set by its length ({nights})",
     eventFood: "Event food",
     eventFoodSub: "{style} · {menu} · ${price} × {guests} guests × {days}",
@@ -1623,7 +1627,7 @@ const COPY = {
     mealPlanEventSub: "{plan} · {stayers} guests · {charged} of {total} nights (the event day has its own menu)",
     staffSub: "{roster} · {band} · {rate} per event day",
     staffBaseNote: "Includes the villa's base team ({base}), charged on the event day.",
-    eventFeeBelowMin: "Waived — events under {min} guests are not charged an event fee",
+    eventFeeBelowMin: "Waived — events of {min} guests or fewer are not charged an event fee",
     horsDoeuvres: "Hors d'oeuvres",
     horsDoeuvresSub: "Served at every event · {sets} sets at ${price} each × {days}",
     secondEntree: "Second entrée",
@@ -1932,7 +1936,7 @@ function calcQuote(input) {
   const waivedByStay = nights >= PRICES.weekFromNights || feeBase === 0;
   /* London meeting 2026-08-24: no event fee under 20 guests. Replaces the
      old "six or fewer outside visitors" waiver. */
-  const waivedBySize = eventGuests < PRICES.eventFeeMinGuests;
+  const waivedBySize = eventGuests <= PRICES.eventFeeMaxWaived;
   const eventFeeWaived = !hasEvent || nights === 0 || waivedByStay || waivedBySize;
   const eventFee = eventFeeWaived ? 0 : r2(feeBase);
 
@@ -2111,8 +2115,8 @@ function calcQuote(input) {
     staffBand: staffBand,
     baseTeam: PRICES.staff.baseTeam.slice(),
     quotedExtras: quotedExtras,
-    eventFeeMinGuests: PRICES.eventFeeMinGuests,
-    belowEventFeeMinimum: hasEvent && eventGuests < PRICES.eventFeeMinGuests,
+    eventFeeMaxWaived: PRICES.eventFeeMaxWaived,
+    belowEventFeeMinimum: hasEvent && eventGuests <= PRICES.eventFeeMaxWaived,
 
     /* cocktail specifics */
     isCocktail: isCocktail,
@@ -2841,7 +2845,7 @@ function renderDates(q) {
     percent: Math.round(PRICES.directBookingDiscount.rate * 100)
   })) + "</span>";
   $("#feeMinNote").innerHTML = "<span>" + esc(t(COPY.event.belowFeeMinimum, {
-    min: PRICES.eventFeeMinGuests })) + "</span>";
+    min: PRICES.eventFeeMaxWaived })) + "</span>";
   show($("#feeMinNote"), state.hasEvent !== false);
 
   const minNote = $("#minNote");
@@ -2962,7 +2966,7 @@ function renderEvent(q) {
 
   const fm = $("#eventFeeMinNote");
   fm.innerHTML = "<span>" + esc(t(COPY.event.belowFeeMinimum, {
-    min: PRICES.eventFeeMinGuests })) + "</span>";
+    min: PRICES.eventFeeMaxWaived })) + "</span>";
   show(fm, true);
 
   const plated = $("#platedNote");
@@ -3076,7 +3080,7 @@ function breakdownRows(q) {
     rows.push(lineRow(C.eventFee,
       q.eventFeeWaived
         ? (q.belowEventFeeMinimum
-            ? t(C.eventFeeBelowMin, { min: q.eventFeeMinGuests })
+            ? t(C.eventFeeBelowMin, { min: q.eventFeeMaxWaived })
             : t(C.eventFeeWaivedLong, { nights: PRICES.weekFromNights }))
         : t(C.eventFeeCharged, { nights: nightsWord(q.nights) }),
       money2.format(L.eventFee),
@@ -3294,7 +3298,7 @@ function estimateText(q) {
     rows.push(pad(LN.eventFee, money2.format(L.eventFee)) + "   [" +
       (q.eventFeeWaived
         ? (q.belowEventFeeMinimum
-            ? t(LN.eventFeeBelowMin, { min: q.eventFeeMinGuests })
+            ? t(LN.eventFeeBelowMin, { min: q.eventFeeMaxWaived })
             : t(LN.eventFeeWaivedLong, { nights: PRICES.weekFromNights }))
         : t(LN.eventFeeCharged, { nights: nightsWord(q.nights) })) + "]");
     if (q.shuttleIncluded) {
