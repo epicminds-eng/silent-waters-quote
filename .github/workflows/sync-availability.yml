@@ -1,0 +1,77 @@
+# Syncs villa availability from eviivo's iCal feed into blocked-dates.json.
+#
+# DORMANT until the repository secret ICAL_URL is set (Settings ->
+# Secrets and variables -> Actions -> New repository secret). While the
+# secret is empty the run exits green and does nothing.
+#
+# On any fetch or parse error the run FAILS without touching the existing
+# blocked-dates.json — stale availability beats none.
+name: Sync availability
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"   # every 6 hours
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-availability
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for feed URL
+        id: gate
+        env:
+          ICAL_URL: ${{ secrets.ICAL_URL }}
+        run: |
+          if [ -z "${ICAL_URL}" ]; then
+            echo "ICAL_URL not set - dormant, exiting green."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+
+      - name: Fetch iCal feed
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          ICAL_URL: ${{ secrets.ICAL_URL }}
+        run: |
+          curl --fail --silent --show-error --location \
+            --max-time 60 --retry 2 \
+            --output feed.ics "${ICAL_URL}"
+          test -s feed.ics || { echo "empty feed" >&2; exit 1; }
+
+      - name: Convert to blocked-dates.json
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          python3 .github/scripts/ical_to_json.py feed.ics blocked-dates.json.new
+          mv blocked-dates.json.new blocked-dates.json
+
+      - name: Commit if changed
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          # Only the nights matter for change detection - the updated
+          # timestamp changes every run and must not create empty commits.
+          old=$(git show HEAD:blocked-dates.json 2>/dev/null | python3 -c \
+            'import json,sys; print(json.load(sys.stdin).get("nights"))' 2>/dev/null || echo "none")
+          new=$(python3 -c \
+            'import json; print(json.load(open("blocked-dates.json")).get("nights"))')
+          if [ "$old" = "$new" ]; then
+            echo "No change in blocked nights - nothing to commit."
+            git checkout -- blocked-dates.json 2>/dev/null || true
+            exit 0
+          fi
+          git config user.name "availability-sync"
+          git config user.email "actions@users.noreply.github.com"
+          git add blocked-dates.json
+          git commit -m "Sync availability from eviivo ($(date -u +%Y-%m-%dT%H:%MZ))"
+          git push
