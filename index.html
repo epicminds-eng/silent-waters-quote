@@ -36,6 +36,13 @@
   --warn:       #8A5A12;
   --warn-wash:  #FBF3E4;
 
+  /* Calendar day states. Booked runs COOL so it cannot be mistaken for the
+     warm gold selection wash; disabled days get faint text and no tile.
+     --booked-ink on --booked-tile is 5.13:1, WCAG AA. */
+  --booked-tile: #E9E9EC;
+  --booked-ink:  #50608A;
+  --day-faint:   #C9CBD1;
+
   /* spacing scale */
   --s-3xs: 0.125rem;
   --s-2xs: 0.25rem;
@@ -307,16 +314,18 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   color: var(--ink);
   cursor: pointer;
 }
-/* Past days, and days that would break the season minimum: inert. */
-.cal__day:disabled{ color: var(--line); cursor: not-allowed; }
+/* Past days, and days that would break the season minimum: faint text
+   only, NO tile — a tile is reserved for booked nights, so "taken" and
+   "not selectable" read as different things. */
+.cal__day:disabled{ color: var(--day-faint); cursor: not-allowed; }
 
 /* Booked nights (Level 1: the BLOCKED list; Level 2: the synced feed).
-   Distinct from ordinary greying: a strike through the number on a faint
-   wash, so "taken" reads differently from "not applicable". */
+   A cool gray tile with a struck-through gray-blue numeral — the only day
+   state that carries a tile, and cool against the warm selection wash. */
 .cal__day[data-blocked="1"]{
-  color: var(--ink-mute);
+  color: var(--booked-ink);
   text-decoration: line-through;
-  background: var(--line-soft);
+  background: var(--booked-tile);
   border-radius: var(--radius-sm);
 }
 
@@ -371,8 +380,8 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   border-radius: var(--radius-pill);
   background: var(--blue);
 }
-.cal__legend--booked{ text-decoration: line-through; }
-.cal__legend--booked::before{ background: var(--line); border-radius: var(--radius-sm); }
+.cal__legend--booked{ color: var(--booked-ink); text-decoration: line-through; }
+.cal__legend--booked::before{ background: var(--booked-tile); border-radius: var(--radius-sm); }
 .cal__done{
   border: 0;
   background: none;
