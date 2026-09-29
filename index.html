@@ -950,7 +950,6 @@ details.breakdown[open] > summary::after{ content: "–"; }
          the under-20 fee line moved to the event step. -->
     <p class="note note--brand" id="discountHint"></p>
     <p class="note note--muted" data-copy="dates.availabilityNote"></p>
-    <div class="lever" id="leverDates" hidden></div>
   </section>
 
   <section class="step" id="step-guests" aria-labelledby="t1" hidden>
@@ -1186,7 +1185,7 @@ const PRICES = {
     ai: {
       label: "All-Inclusive",
       /* Liz copy pass 2026-09-29 */
-      bestFor: "For groups who want everything taken care of, from meals and snacks to drinks.",
+      bestFor: "Everything taken care of, from meals to drinks.",
       adults: 239, teens: 169, kids: 99, under5: 0,
       description: "Chef-prepared breakfast, lunch, hors d'oeuvres, and three-course dinner, with an open bar and premium spirits.",
       barIncluded: true,
@@ -2781,7 +2780,9 @@ function render() {
   renderDates(q);
   renderGuests(q);
   renderMeal(q);
-  renderLever($("#leverDates"), sevenNightLever(state));
+  /* No dollar lever on the dates step (Chad, 2026-09-29): it would be
+     computed before guests and meal plan exist and never match the
+     estimate. The estimate-page lever uses the full quote. */
   renderEvent(q);
   renderExtras();
   if (onLast) renderEstimate(q);
