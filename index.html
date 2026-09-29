@@ -434,6 +434,28 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
 .note--info{ background: var(--blue-wash); color: var(--ink-soft); }
 .note--brand{ background: var(--gold-wash); color: var(--ink-soft); }
 .note--warn{ background: var(--warn-wash); color: var(--warn); }
+/* A caveat, quieter than the incentive callouts (Liz copy pass 2026-09-29). */
+.note--muted{
+  background: transparent;
+  color: var(--ink-mute);
+  font-size: var(--fs-2xs);
+  padding-left: 0;
+  padding-right: 0;
+}
+.note--muted::before{
+  content: "i";
+  flex: 0 0 auto;
+  width: var(--s-md);
+  height: var(--s-md);
+  border: 1px solid var(--ink-mute);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: var(--fs-2xs);
+  line-height: var(--s-md);
+  text-align: center;
+}
 .note strong{ font-weight: 600; }
 .note[hidden]{ display: none; }
 
@@ -901,6 +923,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
 <main id="main">
   <section class="step" id="step-intro" aria-labelledby="t-intro">
+    <p class="step__eyebrow" data-copy="intro.kicker"></p>
     <h2 class="step__title" id="t-intro" data-copy="intro.title"></h2>
     <p class="step__lede" data-copy="intro.lede"></p>
     <div class="choices" id="scopeChoices"></div>
@@ -922,9 +945,11 @@ details.breakdown[open] > summary::after{ content: "–"; }
     </div>
     <p class="note note--brand" id="seasonNote" hidden></p>
     <p class="note note--warn" id="minNote" hidden></p>
-    <p class="note note--info" data-copy="dates.availabilityNote"></p>
-    <p class="note note--info" id="discountHint"></p>
-    <p class="note note--info" id="feeMinNote"></p>
+    <!-- Liz copy pass 2026-09-29: the 7-night line is an incentive (gold
+         callout); the availability line is a caveat (muted, info icon);
+         the under-20 fee line moved to the event step. -->
+    <p class="note note--brand" id="discountHint"></p>
+    <p class="note note--muted" data-copy="dates.availabilityNote"></p>
     <div class="lever" id="leverDates" hidden></div>
   </section>
 
@@ -1027,7 +1052,6 @@ details.breakdown[open] > summary::after{ content: "–"; }
       <div class="lines" id="lines"></div>
     </details>
 
-    <p class="footnote" id="footnotes"></p>
 
     <div class="actions">
       <a class="btn btn--gold" id="mailtoBtn" href="#" data-copy="estimate.sendButton"></a>
@@ -1064,7 +1088,7 @@ const PRICES = {
   seasons: {
     high: {
       label: "High season",
-      window: "7 Jan – 13 Apr",
+      window: "Jan 7 – Apr 13",
       minNights: 3,
       tiers: "std",
       nightly: [3843, 4573, 4819, 5599]
@@ -1076,7 +1100,7 @@ const PRICES = {
     },
     low: {
       label: "Low season",
-      window: "14 Apr – 22 Nov",
+      window: "Apr 14 – Nov 22",
       minNights: 2,
       tiers: "std",
       nightly: [2853, 3563, 3829, 4539]
@@ -1088,7 +1112,7 @@ const PRICES = {
     },
     lowDec: {
       label: "Low season (early December)",
-      window: "1 – 14 Dec",
+      window: "Dec 1 – 14",
       minNights: 3,
       tiers: "std",
       nightly: [2853, 3563, 3829, 4539]
@@ -1100,7 +1124,7 @@ const PRICES = {
     },
     thanksgiving: {
       label: "Thanksgiving",
-      window: "23 – 30 Nov",
+      window: "Nov 23 – 30",
       minNights: 5,
       tiers: "holiday",
       nightly: [4523, 5579]
@@ -1112,7 +1136,7 @@ const PRICES = {
     },
     christmas: {
       label: "Christmas & New Year",
-      window: "15 Dec – 6 Jan",
+      window: "Dec 15 – Jan 6",
       minNights: 7,
       tiers: "holiday",
       nightly: [6865, 7845]
@@ -1150,7 +1174,7 @@ const PRICES = {
      breakfast, arrival transportation and a welcome drink that is included
      in the rate." Displayed, never charged. */
   alwaysIncluded: [
-    "Daily breakfast, prepared by the chef",
+    "Daily breakfast, prepared by our chef",
     "Arrival transportation",
     "A welcome drink"
   ],
@@ -1161,9 +1185,10 @@ const PRICES = {
   mealPlans: {
     ai: {
       label: "All-Inclusive",
-      bestFor: "Best for groups who want everything — meals, snacks and drinks — handled from arrival.",
+      /* Liz copy pass 2026-09-29 */
+      bestFor: "For groups who want everything taken care of, from meals and snacks to drinks.",
       adults: 239, teens: 169, kids: 99, under5: 0,
-      description: "Chef-prepared breakfast, lunch, hors d'oeuvres and three-course dinner, with upper-shelf bar and transport.",
+      description: "Chef-prepared breakfast, lunch, hors d'oeuvres, and three-course dinner, with an open bar and premium spirits.",
       barIncluded: true,
       corkage: 0
     },
@@ -1171,7 +1196,7 @@ const PRICES = {
       label: "Gourmet",
       bestFor: "Best for groups who want chef-prepared food at a fixed price, and who are happy to settle the bar separately.",
       adults: 123, teens: 123, kids: 62, under5: 0,
-      description: "The same chef-prepared menus at a fixed price; beverages billed at check-out.",
+      description: "The same chef-prepared menus; beverages billed at check-out.",
       /* R2 — food only. Every drink is bought from Silent Waters' inventory
          and billed at the end of the stay. This is NOT estimated anywhere in
          this tool: an understated bar tab is the most damaging thing the page
@@ -1202,9 +1227,9 @@ const PRICES = {
   eventStyles: {
     plated: {
       label: "Plated",
-      bestFor: "Seated service, capped at 30 guests.",
+      bestFor: "Seated dinner service for up to 30 guests.",
       cap: 30,
-      description: "Each guest individually served at the table by our staff.",
+      description: "Each guest is served individually at the table by our staff.",
       menus: [
         { key: "extraordinaire", label: "Extraordinaire", price: 137,
           description: "Six courses building to surf & turf — lobster tail and filet." },
@@ -1216,21 +1241,21 @@ const PRICES = {
     },
     buffet: {
       label: "Buffet",
-      bestFor: "Stations and platters, works at any size.",
+      bestFor: "Buffet-style service with stations and platters, suitable for groups of any size.",
       cap: 125,
-      description: "Help yourself at your leisure from a wide spread of dishes.",
+      description: "Guests can help themselves to a selection of dishes at their own pace.",
       /* London recording, [12:28-12:45]: about 70% of couples add a second
          protein — "that's $15 a person". Optional toggle, buffet only. */
       secondEntreePerPerson: 15,
       menus: [
         { key: "empress", label: "Empress", price: 127,
-          description: "Three entrées — Dijon-crusted pork tenderloin, pan-seared snapper and chicken scallopine." },
+          description: "Three entrées — Dijon-crusted pork tenderloin, pan-seared snapper, and chicken scallopine." },
         /* $107 CONFIRMED — London recording, [10:42]: "we increased"; the
            $89 in the brochure's worked example was the stale price. */
         { key: "regatta", label: "Regatta", price: 107,
-          description: "Roast suckling pig, skewered beef brochette and tilapia steamed in coconut milk." },
+          description: "Roast suckling pig, skewered beef brochette, and tilapia steamed in coconut milk." },
         { key: "reggae",  label: "Reggae",  price: 89,
-          description: "Island favourites — jerk chicken or pork, grilled fish, peas and rice." }
+          description: "Island favorites — jerk chicken or pork, grilled fish, peas and rice." }
       ]
     },
     /* Hors d'oeuvres. MANDATORY for every event, whatever the service
@@ -1245,10 +1270,10 @@ const PRICES = {
 
        Assumption: sets = ceil(guests / 30) x 4, so 50 guests is 8 sets. */
     cocktail: {
-      label: "Cocktail",
-      bestFor: "Hors d'oeuvres, standing and roaming.",
+      label: "Cocktail Reception",
+      bestFor: "A standing reception with cocktails and passed hors d'oeuvres.",
       cap: 125,
-      description: "Guests mingle while cocktails and hors d'oeuvres are served throughout.",
+      description: "Guests mingle while drinks and bites are served throughout the event.",
       setPrice: 110,
       setsPerBlock: 4,
       guestsPerBlock: 30,
@@ -1355,25 +1380,25 @@ const PRICES = {
      selectable and are listed in the email as requested, but carry no
      figure and add nothing to the total. */
   extras: [
-    { key: "massage",    label: "Spa — couples massage",
+    { key: "massage",    label: "Spa — Couples Massage",
       meta: "$240",
       price: 240, per: "stay" },
-    { key: "rumTasting", label: "Rum tasting",
+    { key: "rumTasting", label: "Rum Tasting",
       meta: "$1,200",
       price: 1200, per: "stay" },
-    { key: "reggaeBand", label: "Live 5-piece reggae band",
+    { key: "reggaeBand", label: "Live 5-Piece Reggae Band",
       meta: "Two hours — $1,700",
       price: 1700, per: "stay" },
-    { key: "mentoBand",  label: "4-piece mento band",
+    { key: "mentoBand",  label: "4-Piece Mento Band",
       meta: "One hour — $450",
       price: 450, per: "stay" },
     /* TODO — London meeting 2026-08-24: no rate given for either of these.
        Replace `quoted: true` with a `price` once he sets one. */
-    { key: "yacht",      label: "Yacht cruise",
-      meta: "Price quoted by Silent Waters",
+    { key: "yacht",      label: "Yacht Cruise",
+      meta: "Quoted separately by Silent Waters",
       quoted: true },
-    { key: "vipBeach",   label: "VIP transportation to the beach",
-      meta: "Price quoted by Silent Waters",
+    { key: "vipBeach",   label: "VIP Transportation to the Beach",
+      meta: "Quoted separately by Silent Waters",
       quoted: true }
   ],
 
@@ -1473,19 +1498,21 @@ const COPY = {
     next: "Next",
     seeEstimate: "See estimate",
     stepLabel: "{section} · Step {n} of {total}",
-    start: "Start",
+    start: "Get started",
     skipEvent: "Skip the event"
   },
 
   /* THE FIRST PAGE — where a guest chooses what they want quoted. */
+  /* Wording: Liz copy pass 2026-09-29. */
   intro: {
-    title: "Get a quote for your stay and event",
-    lede: "A few questions about your stay at the estate, then your event if you are planning one. It takes about a minute.",
-    note: "You can quote the stay on its own and add the event later — nothing here is binding.",
+    kicker: "Start your estimate",
+    title: "Let's plan your stay at Silent Waters.",
+    lede: "A few quick questions about your stay — and your event, if you're planning one. Takes about a minute.",
+    note: "Your estimate is not a booking commitment. This is just to get you a starting number.",
     bothLabel: "Stay and event",
-    bothMeta: "The estate plus a wedding, reception or party on the property.",
+    bothMeta: "The estate, plus a wedding, reception, or celebration on the property.",
     stayLabel: "Stay only",
-    stayMeta: "Just the estate — you can always add an event when you write to us.",
+    stayMeta: "Just the estate for now. You're welcome to add an event later.",
     sectionStay: "Stay",
     sectionEvent: "Event"
   },
@@ -1493,13 +1520,14 @@ const COPY = {
   /* SCREEN 1 — where guests pick their dates. */
   dates: {
     title: "Your dates",
-    lede: "Tell us when you would like the estate, and we will work out the season and the nightly rate.",
+    lede: "Pick your dates and we'll work out your nightly rate.",
     fieldLabel: "Your dates",
     fieldEmpty: "Select your dates",
     availabilityNote: "Availability shown is approximate — Silent Waters confirms every booking.",
-    discountHint: "Stays of {nights} nights or more, booked directly with the villa, take {percent}% off the accommodation — and the event fee is waived.",
-    seasonWithNights: "<strong>{season}</strong> ({window}) — {nights}. Minimum stay {min} nights.",
-    seasonWithoutNights: "<strong>{season}</strong> ({window}). Minimum stay {min} nights.",
+    discountHint: "Stay {nights} nights or more, booked directly with us, and save {percent}% on accommodation, plus the event fee is waived.",
+    seasonLine: "<strong>{season}</strong> · {window}",
+    seasonNightsLine: "{nights} selected · {min}-night minimum",
+    seasonMinOnlyLine: "{min}-night minimum",
     belowMinimum: "That is {nights} and {season} normally asks for at least {min}. We have still worked out your estimate — just ask us about the minimum when you write."
   },
 
@@ -1516,18 +1544,18 @@ const COPY = {
 
   /* SCREEN 2 — how many people are sleeping at the villa. */
   guests: {
-    title: "Who is staying",
-    lede: "Overnight guests only — sleeping at the estate. Visiting event guests come next.",
+    title: "Who will be staying?",
+    lede: "Please include overnight guests only. Guests attending your event without staying overnight will be added separately.",
     tallyLabel: "Staying overnight",
     tallyOf: "of",
     adults: "Adults",
-    adultsHint: "18 and over",
+    adultsHint: "18+ y.o.",
     teens: "Teens",
-    teensHint: "13 – 17",
+    teensHint: "13–17 y.o.",
     kids: "Children",
-    kidsHint: "5 – 12",
+    kidsHint: "5–12 y.o.",
     under5: "Under 5",
-    under5Hint: "dine free",
+    under5Hint: "Complimentary",
     needOne: "Add at least one overnight guest to continue.",
     tooMany: "The estate sleeps {max}. Please write to us about anything larger.",
     tooManyExtended: "The estate sleeps {max} with a party this size. Please write to us about anything larger.",
@@ -1537,36 +1565,36 @@ const COPY = {
 
   /* SCREEN 3 — choosing All-Inclusive or Gourmet. */
   meal: {
-    title: "Meal plan",
-    lede: "Chosen for the whole stay, for every overnight guest.",
-    includedTitle: "Included on every booking",
-    includedFoot: "These are part of the nightly rate. No meal plan is required to get them — choosing a plan adds to this, it does not unlock it.",
+    title: "Meal Plan",
+    lede: "Selected for your entire stay and for all overnight guests.",
+    includedTitle: "Included with every stay",
+    includedFoot: "These are included in the nightly estate rate.",
     perNight: "${adults} adult · ${teens} teen · ${kids} child, per night",
-    gourmetFlag: "Food only — every drink is billed at check-out and is not part of this estimate",
+    gourmetFlag: "Food only — every drink is billed at check-out and is not part of this estimate.",
     under5Note: "Children under five dine free on both plans.",
     gourmetWarning: "<strong>{disclosure}.</strong> {detail} {corkage}"
   },
 
   /* SCREEN 4 — the wedding itself: guest count, style and menu. */
   event: {
-    title: "The event",
-    lede: "Your ceremony and reception — including the guests already staying with you.",
-    guestsLabel: "Event guests in total",
+    title: "Your Event",
+    lede: "Your ceremony and reception, including guests already staying at the estate.",
+    guestsLabel: "Total event guests — including overnight guests",
     guestsFewer: "Fewer event guests",
     guestsMore: "More event guests",
     daysLabel: "Event days",
     daysFewer: "Fewer event days",
     daysMore: "More event days",
-    daysNote: "Each event day has its own food, bar and staffing. The event fee is charged once for the stay.",
+    daysNote: "Each event day includes its own food, bar, and staffing. The event fee is charged once per stay.",
     styleLabel: "Service style",
     menuLabel: "Menu",
     perPerson: "${price} per person",
     platedOverCap: "Plated service is capped at {cap} guests. With {guests} on the list, buffet or cocktail will serve you better — we have estimated it anyway.",
     venueNote: "<strong>{venue}</strong> — {note} Chosen automatically for {guests} guests.",
     belowFeeMinimum: "Events of {min} guests or fewer are not charged an event fee.",
-    horsDoeuvresNote: "Hors d'oeuvres are served at every event — four sets per {per} guests at ${price} a set. {guests} guests works out at {sets} sets.",
+    horsDoeuvresNote: "Hors d'oeuvres are included with every event. Four sets are provided for every {per} guests at ${price} per set.",
     secondEntreeLabel: "Add a second entrée — $15 per person",
-    secondEntreeMeta: "Most couples add a second protein to the buffet.",
+    secondEntreeMeta: "A popular choice for guests who want more than one protein.",
     selectionsLabel: "Hors d'oeuvres selections",
     selectionsFewer: "Fewer selections",
     selectionsMore: "More selections",
@@ -1575,24 +1603,25 @@ const COPY = {
 
   /* THE EXTRAS CHECKLIST — part of the Stay. */
   extras: {
-    title: "Extras",
-    lede: "Optional additions for your stay. Everything here can be added or dropped later.",
-    quotedValue: "Quoted by Silent Waters",
-    quotedNote: "Items marked \u201cquoted by Silent Waters\u201d carry no price yet. Tick them and we will price them for you — they are listed in your email but add nothing to the estimate."
+    title: "Add to Your Stay",
+    lede: "Optional additions to enhance your stay. You can add or remove them at any time.",
+    quotedValue: "Quoted separately by Silent Waters",
+    quotedNote: "Items marked \u2018Quoted separately by Silent Waters\u2019 will be priced separately and included in your final quote."
   },
 
   /* THE ESTIMATE SCREEN — the result, shown after the five steps. */
   estimate: {
     title: "Your estimate",
-    topline: "Rough estimate only — your final quote comes from Silent Waters.",
-    summaryLine: "{start} – {end} · {stayers} staying · {guests} at the event.",
+    topline: "This is a preliminary estimate. Your final quote will be provided by Silent Waters.",
+    summaryLine: "{start} – {end} · {stayers} overnight guests · {guests} event guests",
+    summaryLineStay: "{start} – {end} · {stayers} overnight guests",
     totalLabel: "Estimated total",
     caption: "Catering for all {guests} event guests from the wedding menus. The bar, the staff gratuity and the refundable deposit are not included — each is listed separately below.",
-    breakdownToggle: "Line-item breakdown",
+    breakdownToggle: "View line-item breakdown",
     groupStay: "Stay",
     groupEvent: "Event",
-    stayCaption: "{nights} at the estate for {stayers} guests.",
-    stayEventCaption: "{nights} at the estate for {stayers} guests, with an event for {guests}.",
+    stayCaption: "{nights} at the estate for {stayers} overnight guests.",
+    stayEventCaption: "{nights} at the estate for {stayers} overnight guests, with an event for {guests} guests.",
     noEventNote: "No event included. Add one any time by writing to us.",
     sendButton: "Send this estimate to Silent Waters",
     copyButton: "Copy estimate",
@@ -1608,7 +1637,7 @@ const COPY = {
   lines: {
     included: "Included with every booking",
     includedValue: "Included",
-    includedSub: "{items} — no meal plan required",
+    includedSub: "{items}",
     accommodation: "Accommodation",
     accommodationSub: "{season} · {basis}",
     accommodationOverflow: " · includes {amount} for guests over {included}",
@@ -1621,13 +1650,13 @@ const COPY = {
     eventFee: "Event fee",
     eventFeeWaivedLong: "Waived — stays of {nights} nights or longer",
     eventFeeWaivedSize: "Waived — events of 20 guests or fewer",
-    eventFeeCharged: "One fee for the stay, set by its length ({nights})",
+    eventFeeCharged: "One event fee per stay, based on the length of your stay.",
     eventFood: "Event food",
     eventFoodSub: "{style} · {menu} · ${price} × {guests} guests × {days}",
     eventFoodCocktailSub: "{count} selections × {pieces} pieces × {days} · selections run ${low}–${high} each",
-    barIncluded: "Event bar — quoted by Silent Waters",
+    barIncluded: "Event bar — quoted separately by Silent Waters",
     barIncludedValue: "Not estimated",
-    barExcludedValue: "Not included",
+    barExcludedValue: "Not estimated",
     staff: "Event staff",
     staffSub: "{roster} · {rate} per event day · representative, quoted per service plan",
     staffNotNeeded: "Not required at {guests} guests",
@@ -1636,15 +1665,18 @@ const COPY = {
     gct: "GCT (15%)",
     gctSub: "On everything above except event staffing",
     total: "Estimated total",
-    totalSub: "Everything above",
+    totalSub: "Stay + event",
+    totalSubStay: "Stay",
     stayTotal: "Stay subtotal",
     stayTotalSub: "Before GCT",
     eventTotal: "Event subtotal",
     eventTotalSub: "Before GCT",
-    gratuity: "20% gratuity, charged at check-out in USD cash",
-    gratuitySub: "Approximately {cash} on this estimate · not included in the total above",
-    mealPlanEventSub: "{plan} · {stayers} guests · {charged} of {total} nights (the event day has its own menu)",
-    staffSub: "{roster} · {band} · {rate} per event day",
+    gratuity: "20% gratuity · charged at check-out in USD cash",
+    gratuitySub: "Approximately {cash} on this estimate. Not included in the estimated total. If paid by card, the gratuity is approximately 23%.",
+    mealPlanEventSub: "{plan} · {stayers} guests · {charged} of {total} nights",
+    mealPlanEventSub2: "Event day meals are priced separately below.",
+    staffSub: "{roster}",
+    staffSub2: "{band} · {rate} per event day",
     staffBaseNote: "Includes the villa's base team ({base}), charged on the event day.",
     eventFeeBelowMin: "Waived — events of {min} guests or fewer are not charged an event fee",
     horsDoeuvres: "Hors d'oeuvres",
@@ -1652,13 +1684,14 @@ const COPY = {
     secondEntree: "Second entrée",
     secondEntreeSub: "$15 × {guests} guests × {days}",
     eventDayLunch: "Event-day lunch for staying guests",
-    eventDayLunchSub: "${rate} × {guests} staying guests × {days} — the event dinner then covers everyone",
+    eventDayLunchSub: "${rate} × {guests} overnight guests × {days}",
+    eventDayLunchSub2: "Event dinner is served to all event guests.",
     shuttle: "Complimentary shuttle",
     shuttleSub: "Included with your event",
     shuttleValue: "Included",
-    extrasQuoted: "{items} — quoted by Silent Waters",
+    extrasQuoted: "{items}",
     deposit: "Refundable damage deposit",
-    depositSub: "Held against the card on file and returned after check-out · not in the total"
+    depositSub: "Held on the card on file and refunded after check-out. Not included in the estimated total."
   },
 
   /* The small grey notes under the breakdown. */
@@ -1677,8 +1710,8 @@ const COPY = {
   /* The nudge shown when a stay is 5 or 6 nights. */
   lever: {
     title: "Staying {nights} nights waives the {fee} event fee",
-    bodyCheaper: "You are booked for {current} nights. Checking out on {date} instead removes the event fee entirely — your total would drop by <strong>{delta}</strong>. Worth asking us about.",
-    bodyDearer: "You are booked for {current} nights. Checking out on {date} instead removes the event fee entirely — your total would rise by <strong>{delta}</strong>, because of {extra} more of accommodation and meals. Worth asking us about."
+    bodyCheaper: "Your current estimate is based on {current} nights. Extending your stay to {nights} nights would waive the event fee. Your estimated total would decrease by <strong>{delta}</strong> to account for the additional nights of accommodation and meals.",
+    bodyDearer: "Your current estimate is based on {current} nights. Extending your stay to {nights} nights would waive the event fee. Your estimated total would increase by <strong>{delta}</strong> to account for the additional nights of accommodation and meals."
   },
 
   /* The email that opens when a guest taps "Send this estimate". */
@@ -1687,14 +1720,14 @@ const COPY = {
     heading: "SILENT WATERS PRIVATE VILLA — WEDDING ESTIMATE REQUEST",
     location: "Montego Bay, Jamaica",
     answersHeading: "YOUR ANSWERS",
-    includedHeading: "INCLUDED ON EVERY BOOKING, NO MEAL PLAN REQUIRED",
+    includedHeading: "INCLUDED WITH EVERY STAY",
     breakdownHeading: "BREAKDOWN (USD)",
     totalLabel: "ESTIMATED TOTAL",
     totalNote: "  Catering for all {guests} event guests from the wedding menus.",
-    notIncludedHeading: "NOT INCLUDED IN THE TOTAL ABOVE",
+    notIncludedHeading: "NOT INCLUDED IN THE ESTIMATED TOTAL",
     notIncludedGratuity: "  Staff gratuity - paid in cash at check-out. Customary 20% of accommodation,\n    approximately {cash} ({card} if paid by card at 23%).",
     notIncludedDeposit: "  Refundable damage deposit: {amount} - held against the card on file, returned after check-out.",
-    notIncludedBar: "  The bar - billed on consumption, quoted by Silent Waters.",
+    notIncludedBar: "  The bar - billed on consumption, quoted separately by Silent Waters.",
     leverNote: "NOTE: at {week} nights the {fee} event fee is waived. Checking out {date} instead would make the total {total} ({sign}{delta}).",
     signOff: "Estimate only. Prices 2H 2026, subject to change.\nYour final quote comes from Silent Waters.",
     datesLabel: "Dates",
@@ -1702,7 +1735,7 @@ const COPY = {
     underMinimumFlag: " — UNDER MINIMUM",
     barLabel: "Bar",
     barNotEstimated: "NOT ESTIMATED",
-    barNotIncluded: "NOT INCLUDED",
+    barNotIncluded: "NOT ESTIMATED",
     visitingSuffix: "({visitors} visiting)",
     minimumSuffix: "{nights} · {season} ({window}), minimum {min}{flag}",
     overflowSuffix: ", incl. {amount} for guests over {included}",
@@ -1714,9 +1747,10 @@ const COPY = {
 
   /* The bar lines. The bar is never given a number — these say so. */
   bar: {
-    alcoholBudget: "Bar is billed on consumption — most weddings budget $80–100 per person, retained with the damage deposit and refunded unused.",
-    eventQuoted: "Event bar — quoted by Silent Waters",
-    allInclusiveNote: "Overnight guests' drinks are covered by All-Inclusive. Drinks for the {visitors} visiting are billed on consumption from the à la carte beverage menu and are quoted by Silent Waters.",
+    alcoholBudget: "Most weddings budget $80–100 per person, retained with the damage deposit and refunded unused.",
+    eventQuoted: "Event bar — quoted separately by Silent Waters",
+    allInclusiveNote: "Drinks for overnight guests are included with the All-Inclusive plan. Drinks for the {visitors} additional event guests are billed based on consumption from the à la carte beverage menu. Silent Waters will provide the final bar quote separately.",
+    gourmetNote: "Drinks for all guests are billed based on consumption from the à la carte beverage menu and settled at check-out. Silent Waters will provide the final bar quote separately.",
     cocktailMenuLabel: "Hors d'oeuvres selections"
   },
 
@@ -1998,11 +2032,14 @@ function calcQuote(input) {
   const visitingGuests = Math.max(0, eventGuests - stayers);
   const barIncluded = plan.barIncluded === true;
   const bar = 0;
-  const barDisclosureLine = barIncluded ? COPY.bar.eventQuoted : plan.barDisclosure;
+  /* Terminology rule (Liz copy pass 2026-09-29): anything Silent Waters
+     must price is "quoted separately by Silent Waters" / "Not estimated",
+     on either plan. The Gourmet food-only disclosure stays on the meal
+     step, where the plan is chosen. */
+  const barDisclosureLine = COPY.bar.eventQuoted;
   const barNote = barIncluded
-    ? t(COPY.bar.allInclusiveNote, {
-        visitors: plural(visitingGuests, COPY.common.guest, COPY.common.guests) })
-    : plan.barDetail;
+    ? t(COPY.bar.allInclusiveNote, { visitors: visitingGuests })
+    : COPY.bar.gourmetNote;
 
   /* ---- extra event staff ------------------------------------------ */
   const staffRoster = hasEvent ? eventStaffRoster(eventGuests) : [];
@@ -2620,7 +2657,7 @@ function buildCounters() {
     const box = el("div", { class: "count" });
     box.innerHTML =
       '<span class="count__label">' + esc(label) +
-      ' <span class="count__hint">' + esc(hint) + '</span></span>' +
+      ' · <span class="count__hint">' + esc(hint) + '</span></span>' +
       '<div class="stepper" data-stepper="' + f.key + '" data-min="0" data-max="' + MAX_STAYERS_ANY + '" data-step="1">' +
         '<button class="stepper__btn" type="button" data-delta="-1" aria-label="' + esc(label) + ' −">&ndash;</button>' +
         '<input class="stepper__value" type="number" inputmode="numeric" data-stepper-value aria-label="' + esc(label) + '">' +
@@ -2852,8 +2889,10 @@ function renderDates(q) {
       season: esc(q.seasonLabel), window: esc(q.seasonWindow), min: q.minNights,
       nights: plural(q.nights, COPY.common.night, COPY.common.nights)
     };
-    seasonNote.innerHTML = "<span>" + t(q.nights > 0
-      ? COPY.dates.seasonWithNights : COPY.dates.seasonWithoutNights, vars) + "</span>";
+    /* Two computed lines (Liz copy pass 2026-09-29). */
+    seasonNote.innerHTML = "<span>" + t(COPY.dates.seasonLine, vars) + "<br>" +
+      t(q.nights > 0 ? COPY.dates.seasonNightsLine : COPY.dates.seasonMinOnlyLine, vars) +
+      "</span>";
     show(seasonNote, true);
   } else {
     show(seasonNote, false);
@@ -2863,9 +2902,6 @@ function renderDates(q) {
     nights: PRICES.weekFromNights,
     percent: Math.round(PRICES.directBookingDiscount.rate * 100)
   })) + "</span>";
-  $("#feeMinNote").innerHTML = "<span>" + esc(t(COPY.event.belowFeeMinimum, {
-    min: PRICES.eventFeeMaxWaived })) + "</span>";
-  show($("#feeMinNote"), state.hasEvent !== false);
 
   const minNote = $("#minNote");
   if (q.belowMinimum) {
@@ -3023,10 +3059,11 @@ function syncStepperButtons() {
 }
 
 /* ---------------- estimate screen ---------------- */
-function lineRow(name, sub, value, cls) {
+function lineRow(name, sub, value, cls, sub2) {
   return '<div class="line' + (cls ? " " + cls : "") + '">' +
     '<span class="line__name">' + esc(name) +
-      (sub ? '<span class="line__sub">' + esc(sub) + '</span>' : "") + '</span>' +
+      (sub ? '<span class="line__sub">' + esc(sub) + '</span>' : "") +
+      (sub2 ? '<span class="line__sub">' + esc(sub2) + '</span>' : "") + '</span>' +
     '<span class="line__val">' + esc(value) + '</span></div>';
 }
 
@@ -3066,14 +3103,15 @@ function breakdownRows(q) {
   }
 
   /* The event day carries its own menu, so it is not a meal-plan night. */
+  const eventDayMeals = q.hasEvent && q.eventDays > 0;
   rows.push(lineRow(C.mealPlan,
-    q.hasEvent && q.eventDays > 0
+    eventDayMeals
       ? t(C.mealPlanEventSub, {
           plan: q.mealPlanLabel, stayers: q.stayers,
           charged: q.mealPlanNights, total: q.nights })
       : t(C.mealPlanSub, {
           plan: q.mealPlanLabel, stayers: q.stayers, nights: nightsWord(q.nights) }),
-    money2.format(L.mealPlan)));
+    money2.format(L.mealPlan), "", eventDayMeals ? C.mealPlanEventSub2 : ""));
 
   const priced = q.extrasDetail.filter(x => !x.quoted);
   rows.push(lineRow(C.extras,
@@ -3086,7 +3124,7 @@ function breakdownRows(q) {
   if (q.quotedExtras.length) {
     rows.push(lineRow(COPY.extras.quotedValue,
       q.quotedExtras.map(x => x.label).join(", "),
-      "—", "line--muted"));
+      C.barIncludedValue, "line--muted"));
   }
 
   rows.push(lineRow(C.stayTotal, C.stayTotalSub,
@@ -3133,20 +3171,20 @@ function breakdownRows(q) {
       t(C.eventDayLunchSub, {
         rate: PRICES.eventDayLunchPerGuest, guests: q.lunchGuests,
         days: daysWord(q.eventDays) }),
-      money2.format(q.eventDayLunch)));
+      money2.format(q.eventDayLunch), "", C.eventDayLunchSub2));
 
-    rows.push(lineRow(q.barDisclosure,
-      q.barNote + " " + COPY.bar.alcoholBudget,
-      q.barIncluded ? C.barIncludedValue : C.barExcludedValue, "line--disclose"));
+    rows.push(lineRow(q.barDisclosure, q.barNote,
+      C.barIncludedValue, "line--disclose", COPY.bar.alcoholBudget));
 
     rows.push(lineRow(C.staff,
       q.staffPerDay > 0
         ? t(C.staffSub, {
-            roster: q.staffRoster.map(r => r.qty + "× " + r.role).join(", "),
-            band: q.staffBand, rate: money2.format(q.staffPerDay) })
+            roster: q.staffRoster.map(r => r.qty + " " + r.role.toLowerCase()).join(" · ") })
         : t(C.staffNotNeeded, { guests: q.eventGuests }),
       money2.format(L.staff),
-      q.staffPerDay > 0 ? "" : "line--muted"));
+      q.staffPerDay > 0 ? "" : "line--muted",
+      q.staffPerDay > 0
+        ? t(C.staffSub2, { band: q.staffBand, rate: money2.format(q.staffPerDay) }) : ""));
 
     rows.push(lineRow(C.eventTotal, C.eventTotalSub,
       money2.format(q.eventTotal), "line--subtotal"));
@@ -3154,7 +3192,8 @@ function breakdownRows(q) {
 
   /* ---------------- COMBINED ---------------- */
   rows.push(lineRow(C.gct, C.gctSub, money2.format(q.gct)));
-  rows.push(lineRow(C.total, C.totalSub, money2.format(q.total), "line--total"));
+  rows.push(lineRow(C.total, q.hasEvent ? C.totalSub : C.totalSubStay,
+    money2.format(q.total), "line--total"));
 
   /* Neither of these is collected up front. */
   rows.push(lineRow(C.deposit, C.depositSub, money2.format(q.deposit), "line--muted"));
@@ -3166,7 +3205,7 @@ function breakdownRows(q) {
 }
 
 function renderEstimate(q) {
-  $("#estimateLede").textContent = t(COPY.estimate.summaryLine, {
+  $("#estimateLede").textContent = t(q.hasEvent ? COPY.estimate.summaryLine : COPY.estimate.summaryLineStay, {
     start: fmtDate(q.checkIn), end: fmtDate(q.checkOut),
     stayers: q.stayers, guests: q.eventGuests });
 
@@ -3213,22 +3252,8 @@ function renderEstimate(q) {
 
   $("#lines").innerHTML = breakdownRows(q);
 
-  const F = COPY.footnotes;
-  const pct = Math.round(q.discountRate * 100);
-  const notes = [
-    t(F.included, { items: q.alwaysIncluded.join(", ").toLowerCase() }),
-    t(F.venue, { venue: q.venue, note: q.venueNote }),
+  /* Footnote paragraph removed — Liz copy pass 2026-09-29. */
 
-    t(F.bar, { disclosure: q.barDisclosure, corkage: q.corkageNote || "" }),
-    t(F.venueSource, { source: q.venueSource || COPY.masthead.name }),
-    q.discountApplies
-      ? t(F.discountApplies, { percent: pct, nights: q.nights })
-      : t(F.discountAvailable, { nights: PRICES.weekFromNights, percent: pct }),
-    F.staffing,
-    t(F.deposit, { amount: money2.format(q.deposit) }),
-    t(F.gratuity, { cash: money2.format(q.gratuity), card: money2.format(q.gratuityOnCard) })
-  ];
-  $("#footnotes").innerHTML = notes.map(n => esc(n)).join("<br>");
 
   $("#mailtoBtn").setAttribute("href", buildMailto(q));
 }
@@ -3275,7 +3300,7 @@ function estimateText(q) {
     ? pricedX.map(x => x.label + (x.units > 1 ? " x" + x.units : "")).join("; ")
     : COPY.common.none));
   if (q.quotedExtras.length) {
-    rows.push("Requested, price to be quoted by Silent Waters:");
+    rows.push("Requested — quoted separately by Silent Waters:");
     q.quotedExtras.forEach(x => rows.push("  - " + x.label));
   }
   rows.push("");
@@ -3308,7 +3333,7 @@ function estimateText(q) {
     rows.push("    - " + x.label + " (" + x.meta + ")" +
       (x.units > 1 ? " x" + x.units : "") + " = " + money2.format(x.amount));
   });
-  q.quotedExtras.forEach(x => rows.push("    - " + x.label + " (quoted by Silent Waters)"));
+  q.quotedExtras.forEach(x => rows.push("    - " + x.label + " (quoted separately by Silent Waters — not estimated)"));
   rows.push(pad(LN.stayTotal, money2.format(q.stayTotal)));
 
   if (q.hasEvent) {
@@ -3336,14 +3361,13 @@ function estimateText(q) {
     rows.push(pad(LN.eventDayLunch, money2.format(q.eventDayLunch)) +
       "   [$" + PRICES.eventDayLunchPerGuest + " x " + q.lunchGuests +
       " staying guests x " + q.eventDays + "]");
-    rows.push(pad(C.barLabel, q.barIncluded ? C.barNotEstimated : C.barNotIncluded) +
-      "   [" + q.barDisclosure + "]");
+    rows.push(pad(C.barLabel, C.barNotEstimated) + "   [" + q.barDisclosure + "]");
     rows.push("    " + q.barNote);
     rows.push("    " + COPY.bar.alcoholBudget);
     if (q.corkageNote) rows.push("    " + q.corkageNote);
     rows.push(pad(LN.staff, money2.format(L.staff)) + "   [" +
       (q.staffPerDay > 0
-        ? q.staffRoster.map(r => r.qty + "x " + r.role).join(", ") + " (" + q.staffBand +
+        ? q.staffRoster.map(r => r.qty + " " + r.role.toLowerCase()).join(" · ") + " (" + q.staffBand +
           ") at " + money2.format(q.staffPerDay) + " per event day"
         : t(LN.staffNotNeeded, { guests: q.eventGuests })) + "]");
     rows.push(pad(LN.eventTotal, money2.format(q.eventTotal)));
@@ -3355,7 +3379,8 @@ function estimateText(q) {
   rows.push("");
   rows.push(C.notIncludedHeading);
   rows.push(t(C.notIncludedDeposit, { amount: money2.format(q.deposit) }));
-  rows.push("  " + LN.gratuity + " — approximately " + money2.format(q.gratuity) + ".");
+  rows.push("  " + LN.gratuity + " — approximately " + money2.format(q.gratuity) +
+    ". If paid by card, approximately 23%.");
   rows.push(C.notIncludedBar);
 
   const lever = sevenNightLever(q.input);
