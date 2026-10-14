@@ -795,6 +795,11 @@ details.breakdown[open] > summary::after{ content: "–"; }
   border-top: 1px solid var(--line-soft);
 }
 
+/* iPhone Safari zooms on a fast second tap, so a quick "+ +" on a stepper
+   zoomed the page instead of counting. manipulation drops double-tap zoom
+   only; pinch-zoom still works, and the viewport meta stays unlocked. */
+button, a[href], label, summary, input, select{ touch-action: manipulation; }
+
 /* ---------------- buttons ---------------- */
 .btn{
   display: inline-flex;
