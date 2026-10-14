@@ -1031,6 +1031,7 @@ details.breakdown[open] > summary::after{ content: "–"; }
       <a class="btn btn--gold" id="mailtoBtn" href="#" data-copy="estimate.sendButton"></a>
       <button class="btn btn--ghost" id="copyBtn" type="button" data-copy="estimate.copyButton"></button>
     </div>
+    <p class="note note--info" id="sendNote" role="status" hidden></p>
     <button class="btn btn--ghost btn--wide" id="estimateBack" type="button" data-copy="estimate.backButton"></button>
 
     <p class="disclaimer" data-copy="estimate.disclaimer"></p>
@@ -1604,7 +1605,12 @@ const COPY = {
     startOver: "Start over",
     disclaimer: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     copied: "Estimate copied",
-    copyFailed: "Could not copy — please select and copy manually"
+    copyFailed: "Could not copy — please select and copy manually",
+    /* Shown under the buttons after every Send tap — in case the guest's
+       mail app did not open. {email} is RESERVATIONS_EMAIL, shown as plain
+       text so it can be selected and pasted into webmail. */
+    sendNoteCopied: "Using a different email? We've copied your estimate. Paste it into a message to {email}.",
+    sendNoteFailed: "Using a different email? Tap Copy estimate, then paste it into a message to {email}."
   },
 
   /* The names and small print on each line of the breakdown table. */
@@ -3217,6 +3223,10 @@ function renderEstimate(q) {
 
 
   $("#mailtoBtn").setAttribute("href", buildMailto(q));
+
+  /* The Send note says "we've copied your estimate" — hide it once the
+     answers change, so it never vouches for an older copy. */
+  if (estimateText(q) !== sendNoteFor) show($("#sendNote"), false);
 }
 
 /* =================================================================
@@ -3380,6 +3390,47 @@ function buildMailto(q) {
 /* =================================================================
    Events
    ================================================================= */
+/** Copies text to the clipboard. Resolves true when the copy took, false
+    otherwise. Shared by Copy estimate and the Send fallback; it shows no
+    feedback of its own. */
+async function copyEstimateText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    const ta = el("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    try {
+      ta.select();
+      return document.execCommand("copy") === true;
+    } finally {
+      document.body.removeChild(ta);
+    }
+  } catch (err) {
+    console.error("Copy failed:", err);
+    return false;
+  }
+}
+
+/* The estimate text the Send note currently describes (null = no note). */
+let sendNoteFor = null;
+
+/** Shows the note under the Send / Copy buttons. Unhidden first, then
+    filled, so the status region exists before its text changes. */
+function showSendNote(copied, text) {
+  const note = $("#sendNote");
+  show(note, true);
+  note.innerHTML = "<span>" + esc(t(copied
+    ? COPY.estimate.sendNoteCopied : COPY.estimate.sendNoteFailed,
+    { email: RESERVATIONS_EMAIL })) + "</span>";
+  sendNoteFor = text;
+}
+
 let toastTimer = null;
 function toast(msg) {
   const node = $("#toast");
@@ -3522,26 +3573,17 @@ function wire() {
   });
 
   $("#copyBtn").addEventListener("click", async () => {
+    const copied = await copyEstimateText(estimateText(calcQuote(state)));
+    toast(copied ? COPY.estimate.copied : COPY.estimate.copyFailed);
+  });
+
+  /* Send stays a plain mailto link — never prevented. Alongside it, copy
+     the estimate and say where to paste it, for guests whose mail app
+     does not open (no account set up, webmail only). */
+  $("#mailtoBtn").addEventListener("click", async () => {
     const text = estimateText(calcQuote(state));
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const ta = el("textarea");
-        ta.value = text;
-        ta.setAttribute("readonly", "");
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
-      toast(COPY.estimate.copied);
-    } catch (err) {
-      console.error("Copy failed:", err);
-      toast(COPY.estimate.copyFailed);
-    }
+    const copied = await copyEstimateText(text);
+    showSendNote(copied, text);
   });
 
   /* Navigation only — localStorage already holds every answer, so stepping
@@ -3626,6 +3668,8 @@ window.SW = {
   mailSubject: mailSubject,
   renderEstimate: renderEstimate,
   renderGuests: renderGuests,
+  buildMailto: buildMailto,
+  currentQuote: () => calcQuote(state),
   RESERVATIONS_EMAIL: RESERVATIONS_EMAIL
 };
 </script>
