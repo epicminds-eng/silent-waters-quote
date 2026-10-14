@@ -713,19 +713,6 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   color: var(--ink-soft);
   margin: var(--s-sm) 0 0;
 }
-.headline__meta{
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--s-xs) var(--s-sm);
-  margin-top: var(--s-md);
-  padding-top: var(--s-sm);
-  border-top: 1px solid var(--line-soft);
-  font-size: var(--fs-2xs);
-  letter-spacing: var(--ls-caps);
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
 
 details.breakdown{
   margin-top: var(--s-md);
@@ -1036,12 +1023,12 @@ details.breakdown[open] > summary::after{ content: "–"; }
     <h2 class="step__title" id="t5" data-copy="estimate.title"></h2>
     <p class="topline" data-copy="estimate.topline"></p>
     <p class="step__lede" id="estimateLede"></p>
+    <p class="step__lede" id="estimateSummary"></p>
 
     <div class="headline">
       <p class="headline__label" data-copy="estimate.totalLabel"></p>
       <p class="headline__range" id="rangeOut">—</p>
-      <p class="headline__sub" id="rangeCaption"></p>
-      <div class="headline__meta" id="rangeMeta"></div>
+      <p class="headline__sub" data-copy="estimate.totalFootnote"></p>
     </div>
 
     <p class="note note--warn" id="estimateWarn" hidden></p>
@@ -1507,8 +1494,8 @@ const COPY = {
   intro: {
     kicker: "Start your estimate",
     title: "Let's plan your stay at Silent Waters.",
-    lede: "A few quick questions about your stay — and your event, if you're planning one. Takes about a minute.",
-    note: "Your estimate is not a booking commitment. This is just to get you a starting number.",
+    lede: "A few quick questions about your stay and your event, if you're planning one. Takes about a minute.",
+    note: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     bothLabel: "Stay and event",
     bothMeta: "The estate, plus a wedding, reception, or celebration on the property.",
     stayLabel: "Stay only",
@@ -1613,21 +1600,21 @@ const COPY = {
   estimate: {
     title: "Your estimate",
     topline: "This is a preliminary estimate. Your final quote will be provided by Silent Waters.",
-    summaryLine: "{start} – {end} · {stayers} overnight guests · {guests} event guests",
-    summaryLineStay: "{start} – {end} · {stayers} overnight guests",
+    dateRange: "{start} – {end}",
     totalLabel: "Estimated total",
     caption: "Catering for all {guests} event guests from the wedding menus. The bar, the staff gratuity and the refundable deposit are not included — each is listed separately below.",
     breakdownToggle: "View line-item breakdown",
     groupStay: "Stay",
     groupEvent: "Event",
-    stayCaption: "{nights} at the estate for {stayers} overnight guests.",
-    stayEventCaption: "{nights} at the estate for {stayers} overnight guests, with an event for {guests} guests.",
+    totalFootnote: "*Your final quote will be confirmed by Silent Waters.",
+    stayCaption: "{nights} at the estate for {stayers} overnight {stayerWord}",
+    stayEventCaption: "{nights} at the estate for {stayers} overnight {stayerWord}, with an event for {guests} {guestWord}",
     noEventNote: "No event included. Add one any time by writing to us.",
-    sendButton: "Send this estimate to Silent Waters",
+    sendButton: "Send to Silent Waters",
     copyButton: "Copy estimate",
-    backButton: "Back — change my answers",
+    backButton: "Edit my answers",
     startOver: "Start over",
-    disclaimer: "Estimate only. Prices 2H 2026, subject to change. Your final quote comes from Silent Waters.",
+    disclaimer: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     copied: "Estimate copied",
     copyFailed: "Could not copy — please select and copy manually",
     warningTail: "Do mention it when you write."
@@ -1729,7 +1716,7 @@ const COPY = {
     notIncludedDeposit: "  Refundable damage deposit: {amount} - held against the card on file, returned after check-out.",
     notIncludedBar: "  The bar - billed on consumption, quoted separately by Silent Waters.",
     leverNote: "NOTE: at {week} nights the {fee} event fee is waived. Checking out {date} instead would make the total {total} ({sign}{delta}).",
-    signOff: "Estimate only. Prices 2H 2026, subject to change.\nYour final quote comes from Silent Waters.",
+    signOff: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     datesLabel: "Dates",
     foodOnlyFlag: " (FOOD ONLY — bar billed at check-out)",
     underMinimumFlag: " — UNDER MINIMUM",
@@ -3207,25 +3194,15 @@ function breakdownRows(q) {
 }
 
 function renderEstimate(q) {
-  $("#estimateLede").textContent = t(q.hasEvent ? COPY.estimate.summaryLine : COPY.estimate.summaryLineStay, {
-    start: fmtDate(q.checkIn), end: fmtDate(q.checkOut),
-    stayers: q.stayers, guests: q.eventGuests });
+  $("#estimateLede").textContent = t(COPY.estimate.dateRange, {
+    start: fmtDate(q.checkIn), end: fmtDate(q.checkOut) });
+
+  $("#estimateSummary").textContent = t(q.hasEvent ? COPY.estimate.stayEventCaption : COPY.estimate.stayCaption, {
+    nights: plural(q.nights, COPY.common.night, COPY.common.nights),
+    stayers: q.stayers, stayerWord: q.stayers === 1 ? COPY.common.guest : COPY.common.guests,
+    guests: q.eventGuests, guestWord: q.eventGuests === 1 ? COPY.common.guest : COPY.common.guests });
 
   $("#rangeOut").innerHTML = money.format(q.total);
-
-  $("#rangeCaption").textContent = q.hasEvent
-    ? t(COPY.estimate.stayEventCaption, {
-        nights: plural(q.nights, COPY.common.night, COPY.common.nights),
-        stayers: q.stayers, guests: q.eventGuests })
-    : t(COPY.estimate.stayCaption, {
-        nights: plural(q.nights, COPY.common.night, COPY.common.nights),
-        stayers: q.stayers });
-
-  $("#rangeMeta").innerHTML =
-    "<span>" + esc(q.seasonLabel) + "</span>" +
-    "<span>" + q.nights + (q.nights === 1 ? " night" : " nights") + "</span>" +
-    "<span>" + esc(q.venue) + "</span>" +
-    "<span>" + esc(q.mealPlanLabel) + "</span>";
 
   const warn = $("#estimateWarn");
   const warnings = [];
@@ -3656,7 +3633,8 @@ window.SW = {
   minNightsForDate: minNightsForDate,
   todayIso: todayIso,
   estimateText: estimateText,
-  mailSubject: mailSubject
+  mailSubject: mailSubject,
+  renderEstimate: renderEstimate
 };
 </script>
 </body>
