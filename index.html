@@ -1694,35 +1694,83 @@ const COPY = {
     bodyDearer: "Your current estimate is based on {current} nights. Extending your stay to {nights} nights would waive the event fee. Your estimated total would increase by <strong>{delta}</strong> to account for the additional nights of accommodation and meals."
   },
 
-  /* The email that opens when a guest taps "Send this estimate". */
+  /* The plain-text estimate — the mailto body and the Copy estimate text
+     (board 2026-10-14). "Label: value" lines, details indented two
+     spaces, paragraphs wrapped at ESTIMATE_WRAP_CH so they read on a
+     phone. {dates} is "1 – 13 Nov 2026"; {nights}/{days} arrive with
+     their word ("12 nights", "1 day"). */
   email: {
-    subject: "Wedding estimate request – {start} to {end} – {guests} guests",
-    heading: "SILENT WATERS PRIVATE VILLA — WEDDING ESTIMATE REQUEST",
-    location: "Montego Bay, Jamaica",
-    answersHeading: "YOUR ANSWERS",
-    includedHeading: "INCLUDED WITH EVERY STAY",
-    breakdownHeading: "BREAKDOWN (USD)",
+    subject: "Wedding estimate · {dates} · {guests} · {total}",
+    subjectStay: "Stay estimate · {dates} · {guests} · {total}",
+    greeting: "Hi Silent Waters team,",
+    introEvent: "I'd like to plan a wedding at the villa.",
+    introStay: "I'd like to plan a stay at the villa.",
+    introBelow: "My estimate is below.",
+    contactPrompts: ["Name:", "Phone:", "Best time to reach me:", "Questions:"],
+    totalHeading: "ESTIMATED TOTAL",
     totalLabel: "ESTIMATED TOTAL",
-    totalNote: "  Catering for all {guests} event guests from the wedding menus.",
-    notIncludedHeading: "NOT INCLUDED IN THE ESTIMATED TOTAL",
-    notIncludedGratuity: "  Staff gratuity - paid in cash at check-out. Customary 20% of accommodation,\n    approximately {cash} ({card} if paid by card at 23%).",
-    notIncludedDeposit: "  Refundable damage deposit: {amount} - held against the card on file, returned after check-out.",
-    notIncludedBar: "  The bar - billed on consumption, quoted separately by Silent Waters.",
-    leverNote: "NOTE: at {week} nights the {fee} event fee is waived. Checking out {date} instead would make the total {total} ({sign}{delta}).",
-    signOff: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
+    essentialsHeading: "THE ESSENTIALS",
     datesLabel: "Dates",
-    foodOnlyFlag: " (FOOD ONLY — bar billed at check-out)",
-    underMinimumFlag: " — UNDER MINIMUM",
+    datesValue: "{dates} ({nights})",
+    underMinimum: "under the {min}-night minimum",
+    seasonLabel: "Season",
+    stayingLabel: "Staying overnight",
+    party: { adult: "adult", adults: "adults", teen: "teen", teens: "teens",
+             child: "child", children: "children", under5: "under 5" },
+    eventGuestsLabel: "Event guests",
+    eventGuestsValue: "{guests} ({visitors} visiting)",
+    eventLabel: "Event",
+    eventValue: "{days}, {style}, {menu} menu",
+    eventValueCocktail: "{days}, {style}, {sets} selections",
+    platedOverCap: "plated is capped at {cap} guests",
+    venueLabel: "Venue",
+    mealPlanLabel: "Meal plan",
+    foodOnlyFlag: " (food only)",
+    extrasLabel: "Extras",
+    extraQuoted: "{label} (quoted separately)",
+    stayHeading: "STAY",
+    accommodationLabel: "Accommodation",
+    accommodationBasis: "{rate} x {nights}",
+    accommodationOverflow: "{basis}, incl. {amount}",
+    accommodationOverflowFor: "for guests over {included}",
+    discountLabel: "Direct booking discount ({percent}%)",
+    mealPlanEventDetail: "{guests} guests, {charged} of {total} nights",
+    mealPlanDetail: "{guests} guests x {nights}",
+    extraPriced: "{label}: {amount}",
+    extraQuotedLine: "{label}: quoted separately",
+    staySubtotalLabel: "Stay subtotal",
+    eventHeading: "EVENT",
+    eventFeeLabel: "Event fee",
+    eventFeeWaivedNights: "waived ({nights}+ nights)",
+    eventFeeWaivedSize: "waived ({max} guests or fewer)",
+    eventFeeCharged: "one fee per stay; waived at {nights}+ nights",
+    shuttleLabel: "Shuttle",
+    shuttleIncluded: "included",
+    eventFoodLabel: "Event food",
+    eventFoodDetail: "${price} x {guests} guests",
+    secondEntreeLabel: "Second entrée",
+    secondEntreeDetail: "${price} x {guests} guests",
+    horsDoeuvresLabel: "Hors d'oeuvres",
+    horsDoeuvresDetail: "{sets} sets x ${price}",
+    lunchLabel: "Event-day lunch",
+    lunchDetail: "${rate} x {guests} staying guests",
+    perDays: "{detail} x {days}",
+    staffLabel: "Event staff",
+    staffNotNeeded: "not required ({guests} guests)",
+    staffPerDay: "{rate} x {days}",
     barLabel: "Bar",
-    barNotEstimated: "NOT ESTIMATED",
-    barNotIncluded: "NOT ESTIMATED",
-    visitingSuffix: "({visitors} visiting)",
-    minimumSuffix: "{nights} · {season} ({window}), minimum {min}{flag}",
-    overflowSuffix: ", incl. {amount} for guests over {included}",
-    perEventDay: "{roster} at {rate} per event day",
-    venueLine: "Venue: {venue} — {note}",
-    cocktailLine: "{label}: {count} × {pieces} pieces ({total} pieces, about {perGuest} per guest). Selections run \${low}-\${high} each.",
-    menuLine: "{label}: {menu} at \${price} per person"
+    barQuoted: "quoted separately",
+    eventSubtotalLabel: "Event subtotal",
+    gctLabel: "GCT ({percent}%)",
+    gctBase: "on {base}, event staff excluded",
+    notIncludedHeading: "NOT INCLUDED IN THE TOTAL",
+    depositLine: "- Refundable damage deposit: {amount}",
+    gratuityLine: "- {percent}% gratuity, paid at check-out",
+    gratuityDetail: "in USD cash: about {amount}",
+    gratuityCardLine: "- If paid by card: about {percent}%",
+    barLine: "- Bar: billed on consumption",
+    leverNote: "At {week} nights the {fee} event fee is waived. Checking out {date} instead would make the total {total} ({sign}{delta}).",
+    signOff: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote."
   },
 
   /* The bar lines. The bar is never given a number — these say so. */
@@ -2575,6 +2623,52 @@ function fmtDate(iso) {
   });
 }
 
+/** A check-in/check-out pair as one range, sharing what the two dates
+    share: "1 – 13 Nov 2026", "28 Jun – 3 Jul 2026", "28 Dec 2026 – 4 Jan
+    2027". `dash` defaults to a spaced en dash; the mail subject passes a
+    bare one. Falls back to the two full dates if either fails to parse. */
+function fmtDateRange(startIso, endIso, dash) {
+  const sep = dash === undefined ? " – " : dash;
+  const parse = iso => {
+    const ms = Date.parse(iso + "T12:00:00Z");
+    return Number.isFinite(ms) ? new Date(ms) : null;
+  };
+  const a = parse(startIso), b = parse(endIso);
+  if (!a || !b || a.getUTCFullYear() !== b.getUTCFullYear()) {
+    return fmtDate(startIso) + sep + fmtDate(endIso);
+  }
+  if (a.getUTCMonth() !== b.getUTCMonth()) {
+    return a.getUTCDate() + " " +
+      a.toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" }) +
+      sep + fmtDate(endIso);
+  }
+  return a.getUTCDate() + sep + fmtDate(endIso);
+}
+
+/* The plain-text estimate wraps its paragraphs here so they read on a
+   phone without the mail app re-flowing them. 38 reproduces the approved
+   example's disclaimer wrap; every line in the goldens stays under 40. */
+const ESTIMATE_WRAP_CH = 38;
+
+/** Greedy word wrap of `text` at `width` columns; `indent` is prepended
+    to every line and counts towards the width. Returns the lines. */
+function wrapTo(text, width, indent) {
+  const pre = indent || "";
+  const lines = [];
+  let line = "";
+  String(text).split(/\s+/).filter(Boolean).forEach(word => {
+    const next = line ? line + " " + word : word;
+    if (line && pre.length + next.length > width) {
+      lines.push(pre + line);
+      line = word;
+    } else {
+      line = next;
+    }
+  });
+  if (line) lines.push(pre + line);
+  return lines;
+}
+
 /* =================================================================
    DOM helpers
    ================================================================= */
@@ -3232,145 +3326,193 @@ function renderEstimate(q) {
 /* =================================================================
    Plain-text estimate — used for both mailto and clipboard
    ================================================================= */
+/** "Low season" -> "Low"; "Low season (early December)" -> "Low (early
+    December)". The season labels carry the word for the page; the
+    estimate text has its own "Season:" label. */
+function seasonShort(label) {
+  return String(label).replace(/\s+season\b/i, "");
+}
+
+/** "9 adults, 4 teens, 5 children, 6 under 5" — zero groups are left
+    out; "" when nobody is staying. */
+function partyBreakdown(counts, words) {
+  const parts = [];
+  const add = (n, one, many) => { if (n > 0) parts.push(n + " " + (n === 1 ? one : many)); };
+  add(counts.adults, words.adult, words.adults);
+  add(counts.teens, words.teen, words.teens);
+  add(counts.kids, words.child, words.children);
+  add(counts.under5, words.under5, words.under5);
+  return parts.join(", ");
+}
+
+/* Whole dollars read as "$4,539"; anything with cents keeps them. */
+function tidyMoney(n) {
+  return Number.isInteger(n) ? money.format(n) : money2.format(n);
+}
+
 function estimateText(q) {
-  const L = q.lines, C = COPY.email, LN = COPY.lines;
+  const L = q.lines, C = COPY.email;
   const rows = [];
-  const pad = (label, value) => (label + " ").padEnd(22, ".") + " " + value;
+  const line = (label, value) => rows.push(label + ": " + value);
+  const detail = text => rows.push("  " + text);
+  const paragraph = (text, indent) =>
+    wrapTo(text, ESTIMATE_WRAP_CH, indent).forEach(l => rows.push(l));
   const nightsWord = n => plural(n, COPY.common.night, COPY.common.nights);
+  const daysWord = n => plural(n, COPY.common.day, COPY.common.days);
+  const perDays = text => q.eventDays > 1
+    ? t(C.perDays, { detail: text, days: daysWord(q.eventDays) }) : text;
+  const unitsSuffix = x => (x.units > 1 ? " x" + x.units : "");
 
-  rows.push(C.heading);
-  rows.push(C.location);
+  rows.push(C.greeting);
   rows.push("");
-  rows.push(C.answersHeading);
-  rows.push(C.datesLabel + ": " + fmtDate(q.checkIn) + " to " + fmtDate(q.checkOut));
-  rows.push(t(C.minimumSuffix, {
-    nights: nightsWord(q.nights), season: q.seasonLabel, window: q.seasonWindow,
-    min: q.minNights, flag: q.belowMinimum ? C.underMinimumFlag : "" }));
-  rows.push(COPY.guests.title + ": " + q.stayers +
-    " (" + COPY.guests.adults + " " + q.counts.adults +
-    ", " + COPY.guests.teens + " " + q.counts.teens +
-    ", " + COPY.guests.kids + " " + q.counts.kids +
-    ", " + COPY.guests.under5 + " " + q.counts.under5 + ")");
-  rows.push(COPY.meal.title + ": " + q.mealPlanLabel +
-    (q.barIncluded ? "" : C.foodOnlyFlag));
+  rows.push(q.hasEvent ? C.introEvent : C.introStay);
+  rows.push(C.introBelow);
+  rows.push("");
+  C.contactPrompts.forEach(p => rows.push(p));
+  rows.push("");
+  rows.push(C.totalHeading);
+  rows.push(money2.format(q.total));
+  rows.push("");
+
+  /* ---- the essentials ------------------------------------------- */
+  rows.push(C.essentialsHeading);
+  line(C.datesLabel, t(C.datesValue, {
+    dates: fmtDateRange(q.checkIn, q.checkOut), nights: nightsWord(q.nights) }));
+  if (q.belowMinimum) detail(t(C.underMinimum, { min: q.minNights }));
+  line(C.seasonLabel, seasonShort(q.seasonLabel));
+  line(C.stayingLabel, q.stayers);
+  const party = partyBreakdown(q.counts, C.party);
+  if (party) detail(party);
   if (q.hasEvent) {
-    rows.push(COPY.event.guestsLabel + ": " + q.eventGuests + " " +
-      t(C.visitingSuffix, { visitors: q.visitingGuests }));
-    rows.push(COPY.event.daysLabel + ": " + q.eventDays);
-    rows.push(COPY.event.styleLabel + ": " + q.styleLabel);
-    rows.push(q.isCocktail
-      ? COPY.event.selectionsLabel + ": " + q.sets + " sets at $" + q.setPrice + " each"
-      : t(C.menuLine, {
-          label: COPY.event.menuLabel, menu: q.menuLabel, price: q.menuPrice }));
-    rows.push(t(C.venueLine, { venue: q.venue, note: q.venueNote }));
-  } else {
-    rows.push(COPY.estimate.noEventNote);
+    line(C.eventGuestsLabel, t(C.eventGuestsValue, {
+      guests: q.eventGuests, visitors: q.visitingGuests }));
+    const style = q.styleLabel.toLowerCase();
+    line(C.eventLabel, q.isCocktail
+      ? t(C.eventValueCocktail, { days: daysWord(q.eventDays), style: style, sets: q.sets })
+      : t(C.eventValue, { days: daysWord(q.eventDays), style: style, menu: q.menuLabel }));
+    if (q.platedOverCap) detail(t(C.platedOverCap, { cap: PRICES.eventStyles.plated.cap }));
+    line(C.venueLabel, q.venue);
   }
+  line(C.mealPlanLabel, q.mealPlanLabel + (q.barIncluded ? "" : C.foodOnlyFlag));
   const pricedX = q.extrasDetail.filter(x => !x.quoted);
-  rows.push(COPY.extras.title + ": " + (pricedX.length
-    ? pricedX.map(x => x.label + (x.units > 1 ? " x" + x.units : "")).join("; ")
-    : COPY.common.none));
-  if (q.quotedExtras.length) {
-    rows.push("Requested — quoted separately by Silent Waters:");
-    q.quotedExtras.forEach(x => rows.push("  - " + x.label));
+  if (q.extrasDetail.length) {
+    rows.push(C.extrasLabel + ":");
+    q.extrasDetail.forEach(x => detail(x.quoted
+      ? t(C.extraQuoted, { label: x.label }) : x.label + unitsSuffix(x)));
+  } else {
+    line(C.extrasLabel, COPY.common.none);
   }
   rows.push("");
-  rows.push(C.includedHeading);
-  q.alwaysIncluded.forEach(i => rows.push("  - " + i));
-  rows.push("");
-  rows.push(C.breakdownHeading);
-  rows.push("");
-  rows.push("-- " + COPY.estimate.groupStay + " --");
 
-  rows.push(pad(LN.accommodation, money2.format(q.accommodationPreDiscount)) +
-    "   [" + q.seasonLabel + ", " + q.rateBasis +
-    (q.accommodationOverflow > 0
-      ? t(C.overflowSuffix, {
-          amount: money2.format(q.accommodationOverflow),
-          included: PRICES.extraGuest.includedUpTo }) : "") + "]");
+  /* ---- stay ----------------------------------------------------- */
+  rows.push(C.stayHeading);
+  line(C.accommodationLabel, money2.format(q.accommodationPreDiscount));
+  if (q.nights > 0) {
+    const nightly = r2((q.accommodationPreDiscount - q.accommodationOverflow) / q.nights);
+    const basis = t(C.accommodationBasis, { rate: tidyMoney(nightly), nights: nightsWord(q.nights) });
+    if (q.accommodationOverflow > 0) {
+      detail(t(C.accommodationOverflow, { basis: basis, amount: tidyMoney(q.accommodationOverflow) }));
+      detail(t(C.accommodationOverflowFor, { included: PRICES.extraGuest.includedUpTo }));
+    } else {
+      detail(basis);
+    }
+  }
   if (q.discountApplies) {
-    rows.push(pad(t(LN.discount, { percent: Math.round(q.discountRate * 100) }),
-      "-" + money2.format(q.accommodationDiscount)));
-    rows.push(pad(LN.accommodationNet, money2.format(L.accommodation)) +
-      "   [" + LN.accommodationNetSub + "]");
+    rows.push(t(C.discountLabel, { percent: Math.round(q.discountRate * 100) }) + ":");
+    detail("-" + money2.format(q.accommodationDiscount));
   }
-  rows.push(pad(LN.mealPlan, money2.format(L.mealPlan)) + "   [" +
-    (q.hasEvent && q.eventDays > 0
-      ? q.mealPlanLabel + ", " + q.stayers + " guests, " + q.mealPlanNights +
-        " of " + q.nights + " nights (event day has its own menu)"
-      : q.mealPlanLabel + ", " + q.stayers + " x " + nightsWord(q.nights)) + "]");
-  rows.push(pad(LN.extras, money2.format(L.extras)));
-  pricedX.forEach(x => {
-    rows.push("    - " + x.label + " (" + x.meta + ")" +
-      (x.units > 1 ? " x" + x.units : "") + " = " + money2.format(x.amount));
-  });
-  q.quotedExtras.forEach(x => rows.push("    - " + x.label + " (quoted separately by Silent Waters — not estimated)"));
-  rows.push(pad(LN.stayTotal, money2.format(q.stayTotal)));
+  line(C.mealPlanLabel, money2.format(L.mealPlan));
+  detail(q.hasEvent
+    ? t(C.mealPlanEventDetail, { guests: q.stayers, charged: q.mealPlanNights, total: q.nights })
+    : t(C.mealPlanDetail, { guests: q.stayers, nights: nightsWord(q.nights) }));
+  if (q.extrasDetail.length) {
+    rows.push(C.extrasLabel + ":" + (pricedX.length ? " " + money2.format(L.extras) : ""));
+    pricedX.forEach(x => detail(t(C.extraPriced, {
+      label: x.label + unitsSuffix(x), amount: money2.format(x.amount) })));
+    q.quotedExtras.forEach(x => detail(t(C.extraQuotedLine, { label: x.label })));
+  }
+  line(C.staySubtotalLabel, money2.format(q.stayTotal));
 
+  /* ---- event ---------------------------------------------------- */
   if (q.hasEvent) {
     rows.push("");
-    rows.push("-- " + COPY.estimate.groupEvent + " --");
-    rows.push(pad(LN.eventFee, money2.format(L.eventFee)) + "   [" +
-      (q.eventFeeWaived
-        ? (q.belowEventFeeMinimum
-            ? t(LN.eventFeeBelowMin, { min: q.eventFeeMaxWaived })
-            : t(LN.eventFeeWaivedLong, { nights: PRICES.weekFromNights }))
-        : t(LN.eventFeeCharged, { nights: nightsWord(q.nights) })) + "]");
-    if (q.shuttleIncluded) {
-      rows.push(pad(COPY.lines.shuttle, "INCLUDED") + "   [" + COPY.lines.shuttleSub + "]");
+    rows.push(C.eventHeading);
+    if (q.eventFeeWaived) {
+      line(C.eventFeeLabel, q.belowEventFeeMinimum
+        ? t(C.eventFeeWaivedSize, { max: q.eventFeeMaxWaived })
+        : t(C.eventFeeWaivedNights, { nights: PRICES.weekFromNights }));
+    } else {
+      line(C.eventFeeLabel, money2.format(L.eventFee));
+      detail(t(C.eventFeeCharged, { nights: PRICES.weekFromNights }));
     }
+    if (q.shuttleIncluded) line(C.shuttleLabel, C.shuttleIncluded);
     if (!q.isCocktail) {
-      rows.push(pad(LN.eventFood, money2.format(L.eventFood)) + "   [$" +
-        q.menuPrice + " x " + q.eventGuests + " x " + q.eventDays + "]");
+      line(C.eventFoodLabel, money2.format(L.eventFood));
+      detail(perDays(t(C.eventFoodDetail, { price: q.menuPrice, guests: q.eventGuests })));
     }
     if (q.secondEntree) {
-      rows.push(pad(LN.secondEntree, money2.format(q.secondEntreeCost)) +
-        "   [$15 x " + q.eventGuests + " x " + q.eventDays + "]");
+      line(C.secondEntreeLabel, money2.format(q.secondEntreeCost));
+      detail(perDays(t(C.secondEntreeDetail, {
+        price: PRICES.eventStyles.buffet.secondEntreePerPerson, guests: q.eventGuests })));
     }
-    rows.push(pad(LN.horsDoeuvres, money2.format(q.horsDoeuvres)) +
-      "   [mandatory - " + q.sets + " sets x $" + q.setPrice + " x " + q.eventDays + "]");
-    rows.push(pad(LN.eventDayLunch, money2.format(q.eventDayLunch)) +
-      "   [$" + PRICES.eventDayLunchPerGuest + " x " + q.lunchGuests +
-      " staying guests x " + q.eventDays + "]");
-    rows.push(pad(C.barLabel, C.barNotEstimated) + "   [" + q.barDisclosure + "]");
-    rows.push("    " + q.barNote);
-    rows.push("    " + COPY.bar.alcoholBudget);
-    if (q.corkageNote) rows.push("    " + q.corkageNote);
-    rows.push(pad(LN.staff, money2.format(L.staff)) + "   [" +
-      (q.staffPerDay > 0
-        ? q.staffRoster.map(r => r.qty + " " + r.role.toLowerCase()).join(" · ") + " (" + q.staffBand +
-          ") at " + money2.format(q.staffPerDay) + " per event day"
-        : t(LN.staffNotNeeded, { guests: q.eventGuests })) + "]");
-    rows.push(pad(LN.eventTotal, money2.format(q.eventTotal)));
+    line(C.horsDoeuvresLabel, money2.format(q.horsDoeuvres));
+    detail(perDays(t(C.horsDoeuvresDetail, { sets: q.sets, price: q.setPrice })));
+    line(C.lunchLabel, money2.format(q.eventDayLunch));
+    detail(perDays(t(C.lunchDetail, {
+      rate: PRICES.eventDayLunchPerGuest, guests: q.lunchGuests })));
+    if (q.staffPerDay > 0) {
+      line(C.staffLabel, money2.format(L.staff));
+      if (q.eventDays > 1) {
+        detail(t(C.staffPerDay, { rate: money2.format(q.staffPerDay), days: daysWord(q.eventDays) }));
+      }
+    } else {
+      line(C.staffLabel, t(C.staffNotNeeded, { guests: q.eventGuests }));
+    }
+    line(C.barLabel, C.barQuoted);
+    if (q.corkageNote) paragraph(q.corkageNote, "  ");
+    line(C.eventSubtotalLabel, money2.format(q.eventTotal));
   }
 
+  /* ---- tax, total, what is outside it --------------------------- */
   rows.push("");
-  rows.push(pad(LN.gct, money2.format(q.gct)) + "   [" + LN.gctSub + "]");
-  rows.push(pad(C.totalLabel, money2.format(q.total)));
+  line(t(C.gctLabel, { percent: Math.round(PRICES.gct * 100) }), money2.format(q.gct));
+  if (L.staff > 0) {
+    /* GCT skips event staffing, so 15% of the two printed subtotals would
+       not foot — say what it is charged on. */
+    detail(t(C.gctBase, { base: money2.format(r2(q.stayTotal + q.eventTotal - L.staff)) }));
+  }
+  rows.push("");
+  line(C.totalLabel, money2.format(q.total));
   rows.push("");
   rows.push(C.notIncludedHeading);
-  rows.push(t(C.notIncludedDeposit, { amount: money2.format(q.deposit) }));
-  rows.push("  " + LN.gratuity + " — approximately " + money2.format(q.gratuity) +
-    ". If paid by card, approximately 23%.");
-  rows.push(C.notIncludedBar);
+  rows.push(t(C.depositLine, { amount: money.format(q.deposit) }));
+  rows.push(t(C.gratuityLine, { percent: Math.round(PRICES.gratuity * 100) }));
+  detail(t(C.gratuityDetail, { amount: money2.format(q.gratuity) }));
+  rows.push(t(C.gratuityCardLine, { percent: Math.round(PRICES.gratuityOnCard * 100) }));
+  rows.push(C.barLine);
 
   const lever = sevenNightLever(q.input);
   if (lever.applies) {
     rows.push("");
-    rows.push(t(C.leverNote, {
+    paragraph(t(C.leverNote, {
       week: PRICES.weekFromNights, fee: money2.format(lever.feeWaived),
       date: fmtDate(lever.checkOut), total: money2.format(lever.extendedTotal),
       sign: lever.cheaper ? "-" : "+", delta: money2.format(Math.abs(lever.delta)) }));
   }
 
   rows.push("");
-  rows.push(C.signOff);
+  paragraph(C.signOff);
   return rows.join("\n");
 }
 
+/** "Wedding estimate · 1–13 Nov 2026 · 50 guests · $109,060"; a stay-only
+    quote counts the staying guests instead, so it never says "0 guests". */
 function mailSubject(q) {
-  return t(COPY.email.subject, {
-    start: fmtDate(q.checkIn), end: fmtDate(q.checkOut), guests: q.eventGuests });
+  const guests = q.hasEvent ? q.eventGuests : q.stayers;
+  return t(q.hasEvent ? COPY.email.subject : COPY.email.subjectStay, {
+    dates: fmtDateRange(q.checkIn, q.checkOut, "–"),
+    guests: plural(guests, COPY.common.guest, COPY.common.guests),
+    total: money.format(q.total) });
 }
 
 /** The over-capacity sentence, escaped, with only the address made a link. */
@@ -3381,10 +3523,15 @@ function capacityNoteHtml(q) {
   return text.split(RESERVATIONS_EMAIL).join(link);
 }
 
+/** RFC 6068 wants CRLF line breaks in a mailto body; the Gmail iPhone app
+    drops bare LF and shows the estimate as one block. The conversion runs
+    on the finished text (not on the rows) so breaks inside wrapped
+    paragraphs are converted too. Copy estimate keeps plain "\n". */
 function buildMailto(q) {
+  const body = estimateText(q).split("\n").join("\r\n");
   return "mailto:" + RESERVATIONS_EMAIL +
     "?subject=" + encodeURIComponent(mailSubject(q)) +
-    "&body=" + encodeURIComponent(estimateText(q));
+    "&body=" + encodeURIComponent(body);
 }
 
 /* =================================================================
