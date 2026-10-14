@@ -827,6 +827,58 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
 .btn:disabled{ opacity: .4; cursor: not-allowed; }
 .actions{ display: flex; flex-direction: column; gap: var(--s-sm); margin-top: var(--s-lg); }
 .btn--wide{ margin-top: var(--s-sm); }
+
+/* ---------------- send panel ----------------
+   Opens under the Send / Copy buttons (board 2026-10-14: inline, not a
+   modal). The gold rule ties it to the page; the box is a pre in the UI
+   face at --fs-md so iPhone never zooms into it. */
+.sendpanel{
+  margin: var(--s-md) 0 0;
+  padding: var(--s-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: var(--rule-thick) solid var(--gold);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.sendpanel[hidden]{ display: none; }
+.sendpanel__title{
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-xl);
+  line-height: 1.12;
+  letter-spacing: var(--ls-tight);
+  margin: 0 0 var(--s-2xs);
+}
+.sendpanel__title:focus{ outline: none; }
+.sendpanel__lede{ color: var(--ink-soft); font-size: var(--fs-sm); margin: 0 0 var(--s-sm); }
+.sendpanel__text{
+  margin: 0;
+  max-height: calc(var(--s-3xl) * 4);
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--s-sm);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.sendpanel__stack{ display: flex; flex-direction: column; gap: var(--s-sm); margin-top: var(--s-sm); }
+.sendpanel__address{
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  -webkit-user-select: all;
+  user-select: all;
+}
 .startover{
   display: block;
   text-align: center;
@@ -1033,10 +1085,20 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
 
 
     <div class="actions">
-      <a class="btn btn--gold" id="mailtoBtn" href="#" data-copy="estimate.sendButton"></a>
+      <button class="btn btn--gold" id="sendBtn" type="button" aria-expanded="false" aria-controls="sendPanel" data-copy="estimate.sendButton"></button>
       <button class="btn btn--ghost" id="copyBtn" type="button" data-copy="estimate.copyButton"></button>
     </div>
-    <p class="note note--info" id="sendNote" role="status" hidden></p>
+    <section class="sendpanel" id="sendPanel" aria-labelledby="sendPanelTitle" hidden>
+      <h3 class="sendpanel__title" id="sendPanelTitle" tabindex="-1" data-copy="estimate.sendPanelTitle"></h3>
+      <p class="sendpanel__lede" data-copy="estimate.sendPanelLede"></p>
+      <pre class="sendpanel__text" id="sendPanelText" tabindex="0" data-copy-aria="estimate.sendPanelTextLabel"></pre>
+      <div class="sendpanel__stack">
+        <button class="btn btn--gold" id="panelCopyBtn" type="button" data-copy="estimate.sendPanelCopy"></button>
+        <p class="sendpanel__address" id="sendPanelAddress"></p>
+        <a class="btn btn--ghost" id="panelMailBtn" href="#" data-copy="estimate.sendPanelOpenMail"></a>
+        <button class="btn btn--ghost" id="panelDone" type="button" data-copy="estimate.sendPanelDone"></button>
+      </div>
+    </section>
     <button class="btn btn--ghost btn--wide" id="estimateBack" type="button" data-copy="estimate.backButton"></button>
 
     <p class="disclaimer" data-copy="estimate.disclaimer"></p>
@@ -1611,11 +1673,16 @@ const COPY = {
     disclaimer: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     copied: "Estimate copied",
     copyFailed: "Could not copy — please select and copy manually",
-    /* Shown under the buttons after every Send tap — in case the guest's
-       mail app did not open. {email} is RESERVATIONS_EMAIL, shown as plain
-       text so it can be selected and pasted into webmail. */
-    sendNoteCopied: "We've copied your estimate. Paste it into a message to {email}.",
-    sendNoteFailed: "Tap Copy estimate, then paste it into a message to {email}."
+    /* The panel Send opens (board 2026-10-14). Copy leads because the
+       mail hand-off depends on each guest's computer; the address sits
+       under it as plain text for webmail. */
+    sendPanelTitle: "Send your estimate",
+    sendPanelLede: "Copy your estimate and email it to us.",
+    sendPanelTextLabel: "Your estimate",
+    sendPanelCopy: "Copy estimate",
+    sendPanelCopied: "Copied",
+    sendPanelOpenMail: "Open my email app",
+    sendPanelDone: "Done"
   },
 
   /* The names and small print on each line of the breakdown table. */
@@ -3321,11 +3388,7 @@ function renderEstimate(q) {
   /* Footnote paragraph removed — Liz copy pass 2026-09-29. */
 
 
-  $("#mailtoBtn").setAttribute("href", buildMailto(q));
-
-  /* The Send note says "we've copied your estimate" — hide it once the
-     answers change, so it never vouches for an older copy. */
-  if (estimateText(q) !== sendNoteFor) show($("#sendNote"), false);
+  refreshSendPanel(q);
 }
 
 /* =================================================================
@@ -3569,18 +3632,55 @@ async function copyEstimateText(text) {
   }
 }
 
-/* The estimate text the Send note currently describes (null = no note). */
-let sendNoteFor = null;
+/* =================================================================
+   Send panel — opened by Send, under the buttons (board 2026-10-14)
+   ================================================================= */
+/** Fills the panel from q: the box text, the mail link and the address.
+    When the text changes, "Copied" goes back to "Copy estimate" so the
+    label never vouches for an older copy. Runs on every renderEstimate. */
+function refreshSendPanel(q) {
+  const text = estimateText(q);
+  const box = $("#sendPanelText");
+  if (box.textContent !== text) {
+    box.textContent = text;
+    $("#panelCopyBtn").textContent = COPY.estimate.sendPanelCopy;
+  }
+  $("#panelMailBtn").setAttribute("href", buildMailto(q));
+  $("#sendPanelAddress").textContent = RESERVATIONS_EMAIL;
+}
 
-/** Shows the note under the Send / Copy buttons. Unhidden first, then
-    filled, so the status region exists before its text changes. */
-function showSendNote(copied, text) {
-  const note = $("#sendNote");
-  show(note, true);
-  note.innerHTML = "<span>" + esc(t(copied
-    ? COPY.estimate.sendNoteCopied : COPY.estimate.sendNoteFailed,
-    { email: RESERVATIONS_EMAIL })) + "</span>";
-  sendNoteFor = text;
+function isSendPanelOpen() {
+  return !$("#sendPanel").hidden;
+}
+
+function openSendPanel() {
+  refreshSendPanel(calcQuote(state));
+  $("#panelCopyBtn").textContent = COPY.estimate.sendPanelCopy;
+  show($("#sendPanel"), true);
+  $("#sendBtn").setAttribute("aria-expanded", "true");
+  $("#sendPanelTitle").focus();
+}
+
+/* Focus goes back to Send, so keyboard and screen-reader users land
+   where they started. */
+function closeSendPanel() {
+  show($("#sendPanel"), false);
+  $("#sendBtn").setAttribute("aria-expanded", "false");
+  $("#sendBtn").focus();
+}
+
+/** Copies the box text. "Copied" only when the copy took; otherwise the
+    box text is selected so the guest can copy it by hand. */
+async function copyFromSendPanel() {
+  const box = $("#sendPanelText");
+  const copied = await copyEstimateText(box.textContent);
+  if (copied) {
+    $("#panelCopyBtn").textContent = COPY.estimate.sendPanelCopied;
+    return;
+  }
+  const sel = window.getSelection && window.getSelection();
+  if (sel) sel.selectAllChildren(box);
+  toast(COPY.estimate.copyFailed);
 }
 
 let toastTimer = null;
@@ -3729,13 +3829,19 @@ function wire() {
     toast(copied ? COPY.estimate.copied : COPY.estimate.copyFailed);
   });
 
-  /* Send stays a plain mailto link — never prevented. Alongside it, copy
-     the estimate and say where to paste it, for guests whose mail app
-     does not open (no account set up, webmail only). */
-  $("#mailtoBtn").addEventListener("click", async () => {
-    const text = estimateText(calcQuote(state));
-    const copied = await copyEstimateText(text);
-    showSendNote(copied, text);
+  /* Send opens the panel instead of handing off to a mail app: the
+     mailto depends on each guest's computer (a Mac set to Chrome/Gmail
+     opened Chrome with no estimate in sight). Tapping it again collapses.
+     There is no tap-outside close: it would swallow the first tap on
+     Edit my answers or Start over. */
+  $("#sendBtn").addEventListener("click", () => {
+    if (isSendPanelOpen()) closeSendPanel();
+    else openSendPanel();
+  });
+  $("#panelCopyBtn").addEventListener("click", copyFromSendPanel);
+  $("#panelDone").addEventListener("click", closeSendPanel);
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape" && isSendPanelOpen()) closeSendPanel();
   });
 
   /* Navigation only — localStorage already holds every answer, so stepping
