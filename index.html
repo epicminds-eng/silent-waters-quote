@@ -1604,8 +1604,7 @@ const COPY = {
     startOver: "Start over",
     disclaimer: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     copied: "Estimate copied",
-    copyFailed: "Could not copy — please select and copy manually",
-    warningTail: "Do mention it when you write."
+    copyFailed: "Could not copy — please select and copy manually"
   },
 
   /* The names and small print on each line of the breakdown table. */
@@ -3204,8 +3203,7 @@ function renderEstimate(q) {
     warnings.push(capacityNoteHtml(q));
   }
   if (warnings.length) {
-    warn.innerHTML = "<span>" + warnings.join(" ") + " " +
-      esc(COPY.estimate.warningTail) + "</span>";
+    warn.innerHTML = "<span>" + warnings.join(" ") + "</span>";
     show(warn, true);
   } else {
     show(warn, false);
