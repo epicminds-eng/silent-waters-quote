@@ -1772,10 +1772,10 @@ const COPY = {
      phone. {dates} is "1 – 13 Nov 2026"; {nights}/{days} arrive with
      their word ("12 nights", "1 day"). */
   email: {
-    subject: "Wedding estimate · {dates} · {guests} · {total}",
+    subject: "Special event estimate · {dates} · {guests} · {total}",
     subjectStay: "Stay estimate · {dates} · {guests} · {total}",
     greeting: "Hi Silent Waters team,",
-    introEvent: "I'd like to plan a wedding at the villa.",
+    introEvent: "I'd like to plan a special event at the villa.",
     introStay: "I'd like to plan a stay at the villa.",
     introBelow: "My estimate is below.",
     contactPrompts: ["Name:", "Phone:", "Best time to reach me:", "Questions:"],
@@ -3433,7 +3433,7 @@ function estimateText(q) {
 
   rows.push(C.greeting);
   rows.push("");
-  rows.push(q.hasEvent ? C.introEvent : C.introStay);
+  paragraph(q.hasEvent ? C.introEvent : C.introStay);
   rows.push(C.introBelow);
   rows.push("");
   C.contactPrompts.forEach(p => rows.push(p));
@@ -3573,7 +3573,7 @@ function estimateText(q) {
   return rows.join("\n");
 }
 
-/** "Wedding estimate · 1–13 Nov 2026 · 50 guests · $109,060"; a stay-only
+/** "Special event estimate · 1–13 Nov 2026 · 50 guests · $109,060"; a stay-only
     quote counts the staying guests instead, so it never says "0 guests". */
 function mailSubject(q) {
   const guests = q.hasEvent ? q.eventGuests : q.stayers;
