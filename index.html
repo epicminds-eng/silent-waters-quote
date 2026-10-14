@@ -458,6 +458,7 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
   text-align: center;
 }
 .note strong{ font-weight: 600; }
+.note a{ color: inherit; text-decoration: underline; }
 .note[hidden]{ display: none; }
 
 /* ---------------- steppers ---------------- */
@@ -668,19 +669,6 @@ input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visibl
 .extra__body{ flex: 1 1 88%; min-width: 0; }
 .extra__title{ display:block; font-weight: 500; font-size: var(--fs-sm); }
 .extra__meta{ display:block; font-size: var(--fs-xs); color: var(--ink-soft); }
-
-/* Sits at the top of the estimate screen, before any number is shown. */
-.topline{
-  background: var(--gold-wash);
-  border-left: var(--rule-thick) solid var(--gold);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: var(--s-xs) var(--s-sm);
-  margin: 0 0 var(--s-sm);
-  font-size: var(--fs-xs);
-  font-weight: 500;
-  color: var(--gold);
-  line-height: 1.45;
-}
 
 /* ---------------- estimate ---------------- */
 .headline{
@@ -1021,7 +1009,6 @@ details.breakdown[open] > summary::after{ content: "–"; }
 
   <section class="step" id="step-estimate" aria-labelledby="t5" hidden>
     <h2 class="step__title" id="t5" data-copy="estimate.title"></h2>
-    <p class="topline" data-copy="estimate.topline"></p>
     <p class="step__lede" id="estimateLede"></p>
     <p class="step__lede" id="estimateSummary"></p>
 
@@ -1469,6 +1456,10 @@ const BLOCKED = [
    Anything after a slash-star, like this paragraph, is a note to you and
    never appears on the screen.
    ================================================================= */
+/* The one address guests are sent to — the over-capacity note and the
+   estimate email both read it from here. */
+const RESERVATIONS_EMAIL = "reservations@silentwatersvilla.com";
+
 const COPY = {
 
   /* The banner at the very top of every screen. */
@@ -1497,9 +1488,7 @@ const COPY = {
     lede: "A few quick questions about your stay and your event, if you're planning one. Takes about a minute.",
     note: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     bothLabel: "Stay and event",
-    bothMeta: "The estate, plus a wedding, reception, or celebration on the property.",
     stayLabel: "Stay only",
-    stayMeta: "Just the estate for now. You're welcome to add an event later.",
     sectionStay: "Stay",
     sectionEvent: "Event"
   },
@@ -1544,8 +1533,8 @@ const COPY = {
     under5: "Under 5",
     under5Hint: "Complimentary",
     needOne: "Add at least one overnight guest to continue.",
-    tooMany: "The estate sleeps {max}. Please write to us about anything larger.",
-    tooManyExtended: "The estate sleeps {max} with a party this size. Please write to us about anything larger.",
+    tooMany: "The estate sleeps {max}. Please email us at " + RESERVATIONS_EMAIL + " to inquire about a larger group.",
+    tooManyExtended: "The estate sleeps {max} with a party this size. Please email us at " + RESERVATIONS_EMAIL + " to inquire about a larger group.",
     capRaised: "With {kids} children aged 5–12 we can sleep up to {max} — they double up in the queen sofa beds, plus two extra cots.",
     surchargeNote: "The estate rate includes up to {included} guests. Everyone past {included} is charged per night as an additional guest."
   },
@@ -1599,7 +1588,6 @@ const COPY = {
   /* THE ESTIMATE SCREEN — the result, shown after the five steps. */
   estimate: {
     title: "Your estimate",
-    topline: "This is a preliminary estimate. Your final quote will be provided by Silent Waters.",
     dateRange: "{start} – {end}",
     totalLabel: "Estimated total",
     caption: "Catering for all {guests} event guests from the wedding menus. The bar, the staff gratuity and the refundable deposit are not included — each is listed separately below.",
@@ -2694,13 +2682,12 @@ function buildStyleChoices() {
 function buildScopeChoices() {
   const wrap = $("#scopeChoices");
   wrap.innerHTML = [
-    { v: "both", title: COPY.intro.bothLabel, meta: COPY.intro.bothMeta },
-    { v: "stay", title: COPY.intro.stayLabel, meta: COPY.intro.stayMeta }
+    { v: "both", title: COPY.intro.bothLabel },
+    { v: "stay", title: COPY.intro.stayLabel }
   ].map(o =>
     '<label class="choice">' +
       '<input type="radio" name="scope" value="' + o.v + '">' +
       '<span class="choice__title">' + esc(o.title) + '</span>' +
-      '<span class="choice__meta">' + esc(o.meta) + '</span>' +
     '</label>').join("");
   wrap.insertAdjacentHTML("afterend",
     '<button class="btn btn--primary btn--wide" id="introStart" type="button">' +
@@ -2918,9 +2905,7 @@ function renderGuests(q) {
     note.innerHTML = "<span>" + esc(COPY.guests.needOne) + "</span>";
     show(note, true);
   } else if (q.overCapacity) {
-    note.innerHTML = "<span>" + esc(t(q.occupancyExtended
-      ? COPY.guests.tooManyExtended : COPY.guests.tooMany,
-      { max: q.maxStayers })) + "</span>";
+    note.innerHTML = "<span>" + capacityNoteHtml(q) + "</span>";
     show(note, true);
   } else {
     show(note, false);
@@ -3207,20 +3192,19 @@ function renderEstimate(q) {
   const warn = $("#estimateWarn");
   const warnings = [];
   if (q.belowMinimum) {
-    warnings.push(t(COPY.dates.belowMinimum, {
+    warnings.push(esc(t(COPY.dates.belowMinimum, {
       nights: plural(q.nights, COPY.common.night, COPY.common.nights),
-      season: q.seasonLabel, min: q.minNights }));
+      season: q.seasonLabel, min: q.minNights })));
   }
   if (q.platedOverCap) {
-    warnings.push(t(COPY.event.platedOverCap, {
-      cap: PRICES.eventStyles.plated.cap, guests: q.eventGuests }));
+    warnings.push(esc(t(COPY.event.platedOverCap, {
+      cap: PRICES.eventStyles.plated.cap, guests: q.eventGuests })));
   }
   if (q.overCapacity) {
-    warnings.push(t(q.occupancyExtended
-      ? COPY.guests.tooManyExtended : COPY.guests.tooMany, { max: q.maxStayers }));
+    warnings.push(capacityNoteHtml(q));
   }
   if (warnings.length) {
-    warn.innerHTML = "<span>" + warnings.map(esc).join(" ") + " " +
+    warn.innerHTML = "<span>" + warnings.join(" ") + " " +
       esc(COPY.estimate.warningTail) + "</span>";
     show(warn, true);
   } else {
@@ -3381,8 +3365,16 @@ function mailSubject(q) {
     start: fmtDate(q.checkIn), end: fmtDate(q.checkOut), guests: q.eventGuests });
 }
 
+/** The over-capacity sentence, escaped, with only the address made a link. */
+function capacityNoteHtml(q) {
+  const text = esc(t(q.occupancyExtended
+    ? COPY.guests.tooManyExtended : COPY.guests.tooMany, { max: q.maxStayers }));
+  const link = '<a href="mailto:' + RESERVATIONS_EMAIL + '">' + RESERVATIONS_EMAIL + '</a>';
+  return text.split(RESERVATIONS_EMAIL).join(link);
+}
+
 function buildMailto(q) {
-  return "mailto:reservations@silentwatersvilla.com" +
+  return "mailto:" + RESERVATIONS_EMAIL +
     "?subject=" + encodeURIComponent(mailSubject(q)) +
     "&body=" + encodeURIComponent(estimateText(q));
 }
@@ -3634,7 +3626,9 @@ window.SW = {
   todayIso: todayIso,
   estimateText: estimateText,
   mailSubject: mailSubject,
-  renderEstimate: renderEstimate
+  renderEstimate: renderEstimate,
+  renderGuests: renderGuests,
+  RESERVATIONS_EMAIL: RESERVATIONS_EMAIL
 };
 </script>
 </body>
