@@ -942,8 +942,11 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
 
 @media (min-width: 30rem){
   .headline__range{ font-size: var(--fs-3xl); }
-  .actions{ flex-direction: row; }
-  .actions > .btn{ flex: 1 1 50%; }
+  /* Send and Copy split the first line evenly (basis 0, so the gap never
+     forces a wrap); "Email didn't open?" takes the whole second line. */
+  .actions{ flex-direction: row; flex-wrap: wrap; }
+  .actions > .btn{ flex: 1 1 0; }
+  .actions > .sendhelp{ flex: 1 1 100%; }
 }
 </style>
 </head>
