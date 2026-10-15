@@ -827,6 +827,9 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
 .btn:disabled{ opacity: .4; cursor: not-allowed; }
 .actions{ display: flex; flex-direction: column; gap: var(--s-sm); margin-top: var(--s-lg); }
 .btn--wide{ margin-top: var(--s-sm); }
+/* "Email didn't open?" reuses the Start over link; inside .actions the
+   row gap already spaces it, so its own top margin is dropped. */
+.actions .sendhelp{ margin-top: 0; }
 
 /* ---------------- send panel ----------------
    Opens under the Send / Copy buttons (board 2026-10-14: inline, not a
@@ -1085,8 +1088,9 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
 
 
     <div class="actions">
-      <button class="btn btn--gold" id="sendBtn" type="button" aria-expanded="false" aria-controls="sendPanel" data-copy="estimate.sendButton"></button>
+      <a class="btn btn--gold" id="sendBtn" href="mailto:reservations@silentwatersvilla.com" data-copy="estimate.sendButton"></a>
       <button class="btn btn--ghost" id="copyBtn" type="button" data-copy="estimate.copyButton"></button>
+      <button class="startover sendhelp" id="sendHelp" type="button" aria-expanded="false" aria-controls="sendPanel" data-copy="estimate.sendHelp"></button>
     </div>
     <section class="sendpanel" id="sendPanel" aria-labelledby="sendPanelTitle" hidden>
       <h3 class="sendpanel__title" id="sendPanelTitle" tabindex="-1" data-copy="estimate.sendPanelTitle"></h3>
@@ -1673,9 +1677,10 @@ const COPY = {
     disclaimer: "Your estimate is not a booking commitment, it is a starting point for planning your stay. Our team will help you refine the details and confirm your final quote.",
     copied: "Estimate copied",
     copyFailed: "Could not copy — please select and copy manually",
-    /* The panel Send opens (board 2026-10-14). Copy leads because the
-       mail hand-off depends on each guest's computer; the address sits
-       under it as plain text for webmail. */
+    /* The panel "Email didn't open?" opens (board 2026-10-14). Copy leads
+       because the mail hand-off depends on each guest's computer; the
+       address sits under it as plain text for webmail. */
+    sendHelp: "Email didn't open?",
     sendPanelTitle: "Send your estimate",
     sendPanelLede: "Copy your estimate and email it to us.",
     sendPanelTextLabel: "Your estimate",
@@ -3646,6 +3651,7 @@ function refreshSendPanel(q) {
     $("#panelCopyBtn").textContent = COPY.estimate.sendPanelCopy;
   }
   $("#panelMailBtn").setAttribute("href", buildMailto(q));
+  $("#sendBtn").setAttribute("href", buildMailto(q));
   $("#sendPanelAddress").textContent = RESERVATIONS_EMAIL;
 }
 
@@ -3657,16 +3663,16 @@ function openSendPanel() {
   refreshSendPanel(calcQuote(state));
   $("#panelCopyBtn").textContent = COPY.estimate.sendPanelCopy;
   show($("#sendPanel"), true);
-  $("#sendBtn").setAttribute("aria-expanded", "true");
+  $("#sendHelp").setAttribute("aria-expanded", "true");
   $("#sendPanelTitle").focus();
 }
 
-/* Focus goes back to Send, so keyboard and screen-reader users land
-   where they started. */
+/* Focus goes back to "Email didn't open?", so keyboard and screen-reader
+   users land where they started. */
 function closeSendPanel() {
   show($("#sendPanel"), false);
-  $("#sendBtn").setAttribute("aria-expanded", "false");
-  $("#sendBtn").focus();
+  $("#sendHelp").setAttribute("aria-expanded", "false");
+  $("#sendHelp").focus();
 }
 
 /** Copies the box text. "Copied" only when the copy took; otherwise the
@@ -3829,12 +3835,15 @@ function wire() {
     toast(copied ? COPY.estimate.copied : COPY.estimate.copyFailed);
   });
 
-  /* Send opens the panel instead of handing off to a mail app: the
-     mailto depends on each guest's computer (a Mac set to Chrome/Gmail
-     opened Chrome with no estimate in sight). Tapping it again collapses.
-     There is no tap-outside close: it would swallow the first tap on
-     Edit my answers or Start over. */
-  $("#sendBtn").addEventListener("click", () => {
+  /* Send is a plain mailto (href set by refreshSendPanel); nothing here
+     intercepts it. The mailto depends on each guest's computer (a Mac set
+     to Chrome/Gmail opened Chrome with no estimate in sight), so "Email
+     didn't open?" sits under the buttons at all times and opens the panel.
+     Board 2026-10-14: no timer guessing whether mail opened — focus moving
+     away cannot tell a mail app from an empty Chrome tab. Tapping the link
+     again collapses. There is no tap-outside close: it would swallow the
+     first tap on Edit my answers or Start over. */
+  $("#sendHelp").addEventListener("click", () => {
     if (isSendPanelOpen()) closeSendPanel();
     else openSendPanel();
   });
