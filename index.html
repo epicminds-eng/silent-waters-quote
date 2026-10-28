@@ -794,6 +794,15 @@ details.breakdown[open] > summary::after{ content: "–"; }
   padding-top: var(--s-sm);
   border-top: 1px solid var(--line-soft);
 }
+/* The build stamp under every screen, in the disclaimer's voice. */
+.colophon{
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0 var(--s-md) var(--s-md);
+  font-size: var(--fs-2xs);
+  color: var(--ink-mute);
+  text-align: center;
+}
 
 /* iPhone Safari zooms on a fast second tap, so a quick "+ +" on a stepper
    zoomed the page instead of counting. manipulation drops double-tap zoom
@@ -1112,6 +1121,7 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
     <button class="startover" id="startOver" type="button" data-copy="estimate.startOver"></button>
   </section>
 </main>
+<footer class="colophon" id="colophon"></footer>
 
 <nav class="navbar" id="navbar">
   <div class="navbar__inner">
@@ -1124,6 +1134,10 @@ button, a[href], label, summary, input, select{ touch-action: manipulation; }
 
 <script>
 "use strict";
+/* The build on the device. Bumped by one per build, shown small in the
+   footer (Chad, 2026-10-28: footer only, nothing in the header). */
+const VERSION = "1.0";
+
 /* =================================================================
    PRICES — every number London needs to edit lives in this object.
    All USD, all before GCT unless a line says otherwise.
@@ -1238,6 +1252,7 @@ const PRICES = {
       bestFor: "Everything taken care of, from meals to drinks.",
       adults: 239, teens: 169, kids: 99, under5: 0,
       description: "Chef-prepared breakfast, lunch, hors d'oeuvres, and three-course dinner, with an open bar and premium spirits.",
+      foodIncluded: true,
       barIncluded: true,
       corkage: 0
     },
@@ -1246,6 +1261,7 @@ const PRICES = {
       bestFor: "Best for groups who want chef-prepared food at a fixed price, and who are happy to settle the bar separately.",
       adults: 123, teens: 123, kids: 62, under5: 0,
       description: "The same chef-prepared menus; beverages billed at check-out.",
+      foodIncluded: true,
       /* R2 — food only. Every drink is bought from Silent Waters' inventory
          and billed at the end of the stay. This is NOT estimated anywhere in
          this tool: an understated bar tab is the most damaging thing the page
@@ -1253,6 +1269,23 @@ const PRICES = {
       barIncluded: false,
       barDisclosure: "Bar bill — not included, billed at check-out",
       barDetail: "Gourmet covers food only. All wine, liquor, soft drinks and bottled water must be bought from Silent Waters' inventory and are billed separately when you check out. We have deliberately not estimated it — for a wedding party it is not a small number.",
+      corkage: 15,
+      corkageNote: "Corkage is $15 per bottle brought to the villa."
+    },
+    /* London via Liz, 2026-10-28 (board-reviewed): no plan at all. Food
+       and drinks are bought from the villa and billed at check-out, so
+       nothing here is estimated. The always-included items (breakfast,
+       arrival transportation, welcome drink) stay. The $44 event-day
+       lunch for staying guests is still charged (Chad, D1). */
+    none: {
+      label: "No meal plan",
+      bestFor: "Best for groups who would rather order as they go, settling food and drinks at check-out.",
+      adults: 0, teens: 0, kids: 0, under5: 0,
+      description: "Daily breakfast is still included; everything else is ordered from the villa.",
+      foodIncluded: false,
+      barIncluded: false,
+      barDisclosure: "Food and drinks — not included, billed at check-out",
+      barDetail: "With no meal plan, food and drinks are ordered from Silent Waters' inventory and billed when you check out. Daily breakfast stays included. We have deliberately not estimated it.",
       corkage: 15,
       corkageNote: "Corkage is $15 per bottle brought to the villa."
     }
@@ -1545,6 +1578,11 @@ const COPY = {
     pageTitle: "Wedding Estimate — Silent Waters Private Villa"
   },
 
+  /* The one-line footer under every screen. */
+  colophon: {
+    version: "v{version}"
+  },
+
   /* The Back and Next buttons pinned to the bottom of the screen. */
   nav: {
     back: "Back",
@@ -1614,7 +1652,7 @@ const COPY = {
     surchargeNote: "Everyone past {included} is charged per night as an additional guest."
   },
 
-  /* SCREEN 3 — choosing All-Inclusive or Gourmet. */
+  /* SCREEN 3 — choosing All-Inclusive, Gourmet or no meal plan. */
   meal: {
     title: "Meal Plan",
     lede: "Selected for your entire stay and for all overnight guests.",
@@ -1622,7 +1660,9 @@ const COPY = {
     includedFoot: "These are included in the nightly estate rate.",
     perNight: "${adults} adult · ${teens} teen · ${kids} child, per night",
     gourmetFlag: "Food only — every drink is billed at check-out and is not part of this estimate.",
-    under5Note: "Children under five dine free on both plans.",
+    under5Note: "Children under five dine free on every plan.",
+    /* The price slot on the no-plan card; there is no nightly rate to show. */
+    nonePrice: "No nightly charge — food and drinks ordered from the villa and billed at check-out.",
     gourmetWarning: "<strong>{disclosure}.</strong> {detail} {corkage}"
   },
 
@@ -1735,6 +1775,8 @@ const COPY = {
     gratuitySub: "Approximately {cash} on this estimate. Not included in the estimated total. If paid by card, the gratuity is approximately 23%.",
     mealPlanEventSub: "{plan} · {stayers} guests · {charged} of {total} nights",
     mealPlanEventSub2: "Event day meals are priced separately below.",
+    mealPlanNoneSub: "{plan} · food and drinks billed at check-out",
+    mealPlanNoneValue: "Not estimated",
     staffSub: "{roster}",
     staffSub2: "{band} · {rate} per event day",
     staffBaseNote: "Includes the villa's base team ({base}), charged on the event day.",
@@ -1806,6 +1848,9 @@ const COPY = {
     venueLabel: "Venue",
     mealPlanLabel: "Meal plan",
     foodOnlyFlag: " (food only)",
+    mealPlanNone: "None",
+    mealPlanNoneValue: "Not estimated",
+    mealPlanNoneDetail: "Food and drinks billed at check-out",
     extrasLabel: "Extras",
     extraQuoted: "{label} (quoted separately)",
     stayHeading: "STAY",
@@ -2139,6 +2184,9 @@ function calcQuote(input) {
      the bar carries NO number on either plan — it is disclosed instead. */
   const visitingGuests = Math.max(0, eventGuests - stayers);
   const barIncluded = plan.barIncluded === true;
+  /* No meal plan includes no food either; the two flags together give
+     the three states (ai: both, gourmet: food only, none: neither). */
+  const foodIncluded = plan.foodIncluded !== false;
   const bar = 0;
   /* Terminology rule (Liz copy pass 2026-09-29): anything Silent Waters
      must price is "quoted separately by Silent Waters" / "Not estimated",
@@ -2231,8 +2279,12 @@ function calcQuote(input) {
     mealPlanKey: planKey,
     mealPlanLabel: plan.label,
     alwaysIncluded: PRICES.alwaysIncluded.slice(),
+    foodIncluded: foodIncluded,
     barIncluded: barIncluded,
     barDisclosure: barDisclosureLine,
+    /* The plan's own lead for the meal-step note; the no-plan card leads
+       with food and drinks, not the event bar. */
+    planDisclosure: plan.barDisclosure || "",
     barDetail: barIncluded ? "" : plan.barDetail,
     corkage: plan.corkage || 0,
     corkageNote: plan.corkageNote || "",
@@ -2834,9 +2886,13 @@ function buildMealChoices() {
       (p.description
         ? '<span class="choice__desc">' + esc(p.description) + '</span>' : '') +
       '<span class="choice__price">' +
-        esc(t(COPY.meal.perNight, { adults: p.adults, teens: p.teens, kids: p.kids })) +
+        esc(p.foodIncluded === false
+          ? COPY.meal.nonePrice
+          : t(COPY.meal.perNight, { adults: p.adults, teens: p.teens, kids: p.kids })) +
       '</span>' +
-      (p.barIncluded ? '' :
+      /* The food-only flag belongs to a plan that includes food but not
+         drinks; the no-plan card says its piece in the price slot. */
+      (p.barIncluded || p.foodIncluded === false ? '' :
         '<span class="choice__flag">' + esc(COPY.meal.gourmetFlag) + '</span>');
     wrap.appendChild(label);
   });
@@ -3139,7 +3195,8 @@ function renderMeal(q) {
   const note = $("#gourmetBarNote");
   if (q && !q.barIncluded) {
     note.innerHTML = "<span>" + t(COPY.meal.gourmetWarning, {
-      disclosure: esc(q.barDisclosure), detail: esc(q.barDetail || ""),
+      disclosure: esc(q.foodIncluded ? q.barDisclosure : q.planDisclosure),
+      detail: esc(q.barDetail || ""),
       corkage: esc(q.corkageNote || "")
     }) + "</span>";
     show(note, true);
@@ -3257,14 +3314,20 @@ function breakdownRows(q) {
 
   /* The event day carries its own menu, so it is not a meal-plan night. */
   const eventDayMeals = q.hasEvent && q.eventDays > 0;
-  rows.push(lineRow(C.mealPlan,
-    eventDayMeals
-      ? t(C.mealPlanEventSub, {
-          plan: q.mealPlanLabel, stayers: q.stayers,
-          charged: q.mealPlanNights, total: q.nights })
-      : t(C.mealPlanSub, {
-          plan: q.mealPlanLabel, stayers: q.stayers, nights: nightsWord(q.nights) }),
-    money2.format(L.mealPlan), "", eventDayMeals ? C.mealPlanEventSub2 : ""));
+  if (!q.foodIncluded) {
+    /* No meal plan: nothing to price, so the row discloses instead. */
+    rows.push(lineRow(C.mealPlan, t(C.mealPlanNoneSub, { plan: q.mealPlanLabel }),
+      C.mealPlanNoneValue, "line--disclose", eventDayMeals ? C.mealPlanEventSub2 : ""));
+  } else {
+    rows.push(lineRow(C.mealPlan,
+      eventDayMeals
+        ? t(C.mealPlanEventSub, {
+            plan: q.mealPlanLabel, stayers: q.stayers,
+            charged: q.mealPlanNights, total: q.nights })
+        : t(C.mealPlanSub, {
+            plan: q.mealPlanLabel, stayers: q.stayers, nights: nightsWord(q.nights) }),
+      money2.format(L.mealPlan), "", eventDayMeals ? C.mealPlanEventSub2 : ""));
+  }
 
   const priced = q.extrasDetail.filter(x => !x.quoted);
   rows.push(lineRow(C.extras,
@@ -3469,7 +3532,9 @@ function estimateText(q) {
     if (q.platedOverCap) detail(t(C.platedOverCap, { cap: PRICES.eventStyles.plated.cap }));
     line(C.venueLabel, q.venue);
   }
-  line(C.mealPlanLabel, q.mealPlanLabel + (q.barIncluded ? "" : C.foodOnlyFlag));
+  line(C.mealPlanLabel, q.foodIncluded
+    ? q.mealPlanLabel + (q.barIncluded ? "" : C.foodOnlyFlag)
+    : C.mealPlanNone);
   const pricedX = q.extrasDetail.filter(x => !x.quoted);
   if (q.extrasDetail.length) {
     rows.push(C.extrasLabel + ":");
@@ -3497,10 +3562,15 @@ function estimateText(q) {
     rows.push(t(C.discountLabel, { percent: Math.round(q.discountRate * 100) }) + ":");
     detail("-" + money2.format(q.accommodationDiscount));
   }
-  line(C.mealPlanLabel, money2.format(L.mealPlan));
-  detail(q.hasEvent
-    ? t(C.mealPlanEventDetail, { guests: q.stayers, charged: q.mealPlanNights, total: q.nights })
-    : t(C.mealPlanDetail, { guests: q.stayers, nights: nightsWord(q.nights) }));
+  if (q.foodIncluded) {
+    line(C.mealPlanLabel, money2.format(L.mealPlan));
+    detail(q.hasEvent
+      ? t(C.mealPlanEventDetail, { guests: q.stayers, charged: q.mealPlanNights, total: q.nights })
+      : t(C.mealPlanDetail, { guests: q.stayers, nights: nightsWord(q.nights) }));
+  } else {
+    line(C.mealPlanLabel, C.mealPlanNoneValue);
+    detail(C.mealPlanNoneDetail);
+  }
   if (q.extrasDetail.length) {
     rows.push(C.extrasLabel + ":" + (pricedX.length ? " " + money2.format(L.extras) : ""));
     pricedX.forEach(x => detail(t(C.extraPriced, {
@@ -3894,6 +3964,7 @@ applyBlockedDates([]);
 })();
 
 paintStatic();
+$("#colophon").textContent = t(COPY.colophon.version, { version: VERSION });
 buildScopeChoices();
 buildCounters();
 buildMealChoices();
@@ -3904,6 +3975,7 @@ render();
 
 /* Exposed so tests/pricing.test.html can drive the pricing engine. */
 window.SW = {
+  VERSION: VERSION,
   PRICES: PRICES,
   DEFAULTS: DEFAULTS,
   calcQuote: calcQuote,
